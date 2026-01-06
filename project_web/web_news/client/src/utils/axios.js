@@ -2,10 +2,14 @@ import axios from "axios";
 
 // Configure axios to send credentials (cookies) with all requests
 axios.defaults.withCredentials = true;
-const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8800/api";
 
-axios.defaults.withCredentials = true;
+// Build API base URL from Vite env var (VITE_API_URL). If provided without trailing '/api',
+// append '/api'. In production set VITE_API_URL to your backend origin (e.g., https://api.example.com)
+const envUrl = import.meta.env.VITE_API_URL;
+const apiUrl = envUrl ? envUrl.replace(/\/$/, "") + "/api" : "http://localhost:8800/api";
+
 axios.defaults.baseURL = apiUrl;
+console.log("🔧 Using API base URL:", axios.defaults.baseURL);
 
 // Add request interceptor for debugging
 axios.interceptors.request.use(
