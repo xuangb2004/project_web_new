@@ -1,6 +1,6 @@
 import { createContext, useEffect, useState } from "react";
-// Đảm bảo đường dẫn import axios đúng với cấu trúc thư mục của bạn
-import axios from "axios"; 
+// Use shared axios instance configured with VITE_API_URL
+import axios from "../utils/axios";
 
 export const AuthContext = createContext();
 
@@ -10,22 +10,22 @@ export const AuthContextProvider = ({ children }) => {
   );
 
   const login = async (inputs) => {
-    const res = await axios.post("http://localhost:8800/api/auth/login", inputs);
+    const res = await axios.post("/auth/login", inputs);
     setCurrentUser(res.data);
-  };
+  }; 
 
   // --- THÊM HÀM NÀY VÀO ---
   const loginWithGoogle = async (token) => {
     // Gọi API backend mà bạn vừa viết ở bước trước
-    const res = await axios.post("http://localhost:8800/api/auth/google", { token });
+    const res = await axios.post("/auth/google", { token });
     setCurrentUser(res.data);
-  };
+  }; 
   // -------------------------
 
   const logout = async (inputs) => {
-    await axios.post("http://localhost:8800/api/auth/logout");
+    await axios.post("/auth/logout");
     setCurrentUser(null);
-  };
+  }; 
 
   useEffect(() => {
     localStorage.setItem("user", JSON.stringify(currentUser));

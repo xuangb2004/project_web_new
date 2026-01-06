@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios"; // <--- 1. Import axios
+import axios from "../utils/axios"; // <--- 1. Import axios
 import { FaUser, FaBookmark, FaList, FaLink, FaSignOutAlt, FaEdit } from "react-icons/fa";
 
 const Dropdown = ({ user, logout }) => {
@@ -12,7 +12,7 @@ const Dropdown = ({ user, logout }) => {
     const fetchStats = async () => {
       try {
         if (user) {
-          const res = await axios.get(`http://localhost:8800/api/users/stats/${user.id}`);
+          const res = await axios.get(`/users/stats/${user.id}`);
           setStats(res.data);
         }
       } catch (err) {

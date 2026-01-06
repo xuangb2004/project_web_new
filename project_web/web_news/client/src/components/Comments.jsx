@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../context/authContext";
-import axios from "axios";
+import axios from "../utils/axios";
 import moment from "moment";
 // Thêm icon Sửa, Xóa
 import { FaTrash, FaPen } from "react-icons/fa"; 
@@ -20,7 +20,7 @@ const Comments = ({ postId }) => {
 
   const fetchComments = async () => {
     try {
-      const res = await axios.get(`http://localhost:8800/api/comments?postId=${postId}`);
+      const res = await axios.get(`/comments?postId=${postId}`);
       setComments(res.data);
     } catch (err) { console.log(err); }
   };
@@ -38,7 +38,7 @@ const Comments = ({ postId }) => {
     if (!content.trim()) return;
 
     try {
-      await axios.post("http://localhost:8800/api/comments", {
+      await axios.post(`/comments`, {
         desc: content,
         post_id: postId,
         user_id: currentUser.id,
@@ -53,7 +53,7 @@ const Comments = ({ postId }) => {
   const handleDelete = async (commentId) => {
     if (!window.confirm("Bạn có chắc muốn xóa bình luận này?")) return;
     try {
-      await axios.delete(`http://localhost:8800/api/comments/${commentId}`);
+      await axios.delete(`/comments/${commentId}`);
       fetchComments();
     } catch (err) {
       alert(err.response.data);
@@ -70,7 +70,7 @@ const Comments = ({ postId }) => {
   // --- LƯU SỬA ---
   const handleSaveEdit = async (commentId) => {
     try {
-      await axios.put(`http://localhost:8800/api/comments/${commentId}`, {
+      await axios.put(`/comments/${commentId}`, {
         content: editContent
       });
       setEditingCommentId(null);

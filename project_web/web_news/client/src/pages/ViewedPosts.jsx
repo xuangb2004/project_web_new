@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/axios";
 import moment from "moment";
 import { AuthContext } from "../context/authContext";
 import { FaTrashAlt, FaHeart, FaRegHeart, FaBookmark, FaRegBookmark } from "react-icons/fa"; // Import thêm icon
@@ -11,7 +11,7 @@ const ViewedPosts = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`http://localhost:8800/api/interactions/history?userId=${currentUser.id}`);
+      const res = await axios.get(`/interactions/history?userId=${currentUser.id}`);
       setPosts(res.data);
     } catch (err) { console.log(err); }
   };
@@ -24,9 +24,9 @@ const ViewedPosts = () => {
   const handleLike = async (post) => {
     try {
       if (post.is_liked) {
-        await axios.delete(`http://localhost:8800/api/likes?postId=${post.id}&userId=${currentUser.id}`);
+        await axios.delete(`/likes?postId=${post.id}&userId=${currentUser.id}`);
       } else {
-        await axios.post("http://localhost:8800/api/likes", { user_id: currentUser.id, post_id: post.id });
+        await axios.post(`/likes`, { user_id: currentUser.id, post_id: post.id });
       }
       fetchData(); // Reload lại danh sách để cập nhật icon
     } catch (err) { console.log(err); }
@@ -35,7 +35,7 @@ const ViewedPosts = () => {
   // Xử lý Bookmark ngay tại danh sách
   const handleBookmark = async (post) => {
     try {
-      await axios.post("http://localhost:8800/api/interactions/bookmarks", {
+      await axios.post("/interactions/bookmarks", {
         user_id: currentUser.id,
         post_id: post.id
       });
@@ -46,7 +46,7 @@ const ViewedPosts = () => {
   const handleClearHistory = async () => {
     if (!window.confirm("Xóa toàn bộ lịch sử?")) return;
     try {
-      await axios.delete(`http://localhost:8800/api/interactions/history?userId=${currentUser.id}`);
+      await axios.delete(`/interactions/history?userId=${currentUser.id}`);
       setPosts([]);
     } catch (err) { console.log(err); }
   };

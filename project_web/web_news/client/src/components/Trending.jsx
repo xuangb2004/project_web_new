@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axios from "../utils/axios";
 import { Link } from "react-router-dom";
 import moment from "moment";
 import { FaFire } from "react-icons/fa"; // Cài icon: npm install react-icons
@@ -10,7 +10,7 @@ const Trending = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await axios.get("http://localhost:8800/api/posts/trending");
+        const res = await axios.get("/posts/trending");
         setPosts(res.data);
       } catch (err) {
         console.log(err);

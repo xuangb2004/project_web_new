@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/axios";
 import { AuthContext } from "../context/authContext";
 import { FaHeart, FaRegHeart, FaBookmark, FaRegBookmark } from "react-icons/fa";
 
@@ -10,7 +10,7 @@ const SavedPosts = () => {
 
   const fetchData = async () => {
     try {
-      const res = await axios.get(`http://localhost:8800/api/interactions/bookmarks?userId=${currentUser.id}`);
+      const res = await axios.get(`/interactions/bookmarks?userId=${currentUser.id}`);
       setPosts(res.data);
     } catch (err) { console.log(err); }
   };
@@ -22,9 +22,9 @@ const SavedPosts = () => {
   const handleLike = async (post) => {
     try {
       if (post.is_liked) {
-        await axios.delete(`http://localhost:8800/api/likes?postId=${post.id}&userId=${currentUser.id}`);
+        await axios.delete(`/likes?postId=${post.id}&userId=${currentUser.id}`);
       } else {
-        await axios.post("http://localhost:8800/api/likes", { user_id: currentUser.id, post_id: post.id });
+        await axios.post(`/likes`, { user_id: currentUser.id, post_id: post.id });
       }
       fetchData();
     } catch (err) { console.log(err); }
@@ -33,7 +33,7 @@ const SavedPosts = () => {
   const handleBookmark = async (post) => {
     try {
       // Toggle Bookmark (Lưu/Bỏ lưu)
-      await axios.post("http://localhost:8800/api/interactions/bookmarks", {
+      await axios.post("/interactions/bookmarks", {
         user_id: currentUser.id,
         post_id: post.id
       });

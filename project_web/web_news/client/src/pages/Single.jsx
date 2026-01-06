@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/axios";
 import moment from "moment";
 import { AuthContext } from "../context/authContext";
 import Menu from "../components/Menu";
@@ -29,7 +29,7 @@ const Single = () => {
     const fetchData = async () => {
       // 1. Lấy bài viết (Quan trọng nhất)
       try {
-        const res = await axios.get(`http://localhost:8800/api/posts/${postId}`);
+        const res = await axios.get(`/posts/${postId}`);
         setPost(res.data);
       } catch (err) {
         console.log("Lỗi tải bài viết:", err);
@@ -38,7 +38,7 @@ const Single = () => {
       // 2. Kiểm tra Report (Nếu lỗi cũng không sao, không chặn các cái khác)
       if (currentUser) {
         try {
-          const resReport = await axios.get(`http://localhost:8800/api/reports/check?postId=${postId}&userId=${currentUser.id}`);
+          const resReport = await axios.get(`/reports/check?postId=${postId}&userId=${currentUser.id}`);
           // Giả sử bạn có state isReported
           // setIsReported(resReport.data); 
         } catch (err) {
@@ -47,7 +47,7 @@ const Single = () => {
 
         // 3. Lưu lịch sử xem (Chạy độc lập)
         try {
-           await axios.post("http://localhost:8800/api/users/history", { postId: postId });
+           await axios.post("/users/history", { postId: postId });
            console.log("Đã lưu lịch sử xem");
         } catch (err) {
            console.log("Lỗi lưu lịch sử:", err);
@@ -154,10 +154,10 @@ const Single = () => {
     if (!currentUser) return alert("Bạn cần đăng nhập!");
     try {
       if (likes.includes(currentUser.id)) {
-        await axios.delete(`http://localhost:8800/api/likes?postId=${postId}&userId=${currentUser.id}`);
+        await axios.delete(`/likes?postId=${postId}&userId=${currentUser.id}`);
         setLikes(likes.filter((id) => id !== currentUser.id));
       } else {
-        await axios.post("http://localhost:8800/api/likes", { user_id: currentUser.id, post_id: postId });
+        await axios.post("/likes", { user_id: currentUser.id, post_id: postId });
         setLikes([...likes, currentUser.id]);
       }
     } catch (err) { console.log(err); }
@@ -166,7 +166,7 @@ const Single = () => {
   const handleBookmark = async () => {
     if (!currentUser) return alert("Bạn cần đăng nhập để lưu bài!");
     try {
-      await axios.post("http://localhost:8800/api/interactions/bookmarks", { user_id: currentUser.id, post_id: postId });
+      await axios.post("/interactions/bookmarks", { user_id: currentUser.id, post_id: postId });
       setIsSaved(!isSaved);
     } catch (err) { console.log(err); }
   };
@@ -181,7 +181,7 @@ const Single = () => {
     if (!reportReason.trim()) return alert("Vui lòng nhập lý do báo cáo!");
 
     try {
-      await axios.post("http://localhost:8800/api/reports", { 
+      await axios.post("/reports", { 
         user_id: currentUser.id,
         post_id: postId, 
         reason: reportReason 
@@ -199,7 +199,7 @@ const Single = () => {
   const handleDelete = async () => {
     if(!window.confirm("Bạn có chắc chắn muốn xóa bài viết này?")) return;
     try {
-      await axios.delete(`http://localhost:8800/api/posts/${postId}`, { data: { user_id: currentUser.id } }); // Gửi kèm user_id để check quyền
+      await axios.delete(`/posts/${postId}`, { data: { user_id: currentUser.id } }); // Gửi kèm user_id để check quyền
       navigate("/");
     } catch (err) { console.log(err); }
   };

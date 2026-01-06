@@ -1,7 +1,7 @@
 import React, { useState, useContext, useRef, useEffect } from "react";
 import { AuthContext } from "../context/authContext";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../utils/axios";
 import moment from "moment";
 import { FaUser, FaBookmark, FaList, FaSignOutAlt, FaArrowLeft, FaEdit, FaFileAlt, FaThumbsUp, FaComment, FaEye } from "react-icons/fa";
 import "../style_editor.scss"; 
@@ -35,12 +35,12 @@ const Profile = () => {
     const fetchStats = async () => {
       try {
         if (currentUser) {
-          const res = await axios.get(`http://localhost:8800/api/users/stats/${currentUser.id}`);
+          const res = await axios.get(`/users/stats/${currentUser.id}`);
           setStats(res.data);
           
           // Nếu là editor, lấy thống kê editor
           if (currentUser.role_id === 2) {
-            const editorRes = await axios.get(`http://localhost:8800/api/users/editor-stats/${currentUser.id}`);
+            const editorRes = await axios.get(`/users/editor-stats/${currentUser.id}`);
             setEditorStats(editorRes.data);
           }
         }
@@ -68,7 +68,7 @@ const Profile = () => {
       if (!file) return;
       const formData = new FormData();
       formData.append("file", file);
-      const res = await axios.post("http://localhost:8800/api/upload", formData);
+      const res = await axios.post("/upload", formData);
       const fileName = res.data;
       const avatarUrl = `/upload/${fileName}`; 
       setInputs((prev) => ({ ...prev, avatar: avatarUrl }));
@@ -81,7 +81,7 @@ const Profile = () => {
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`http://localhost:8800/api/users/${currentUser.id}`, inputs);
+      await axios.put(`/users/${currentUser.id}`, inputs);
       const updatedUser = { ...currentUser, ...inputs };
       localStorage.setItem("user", JSON.stringify(updatedUser));
       setStatus("Cập nhật thành công!");

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
+import axios from "../utils/axios";
 import { FaRobot, FaPaperPlane, FaTimes } from "react-icons/fa";
 import "./Chatbot.scss";
 
@@ -29,7 +29,7 @@ const Chatbot = () => {
     setIsLoading(true);
 
     try {
-      const res = await axios.post("http://localhost:8800/api/chat", { message: userMessage });
+      const res = await axios.post("/chat", { message: userMessage });
       
       const botReply = res.data.reply;
       const posts = res.data.posts;

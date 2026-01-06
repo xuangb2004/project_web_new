@@ -61,15 +61,4 @@ const Register = () => {
     </div>
   );
 };
-const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.post("http://localhost:8800/api/auth/register", inputs);
-      navigate("/login");
-    } catch (err) {
-      // SỬA DÒNG NÀY: Thêm dấu ? vào sau response
-      // Nếu err.response không tồn tại (do server sập), nó sẽ in ra dòng text phía sau thay vì báo lỗi
-      setError(err.response?.data || "Lỗi kết nối Server!"); 
-    }
-  };
 export default Register;
