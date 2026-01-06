@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import { GoogleLogin } from '@react-oauth/google';
-
+import axios from "../../utils/axios";
 const Login = () => {
   const [inputs, setInputs] = useState({
     username: "",

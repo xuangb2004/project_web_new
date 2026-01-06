@@ -20,8 +20,7 @@ import ViewedPosts from "./pages/ViewedPosts"
 import AdminDashboard from "./pages/AdminDashboard";
 import PostsDetail from "./pages/PostsDetail"; 
 import "./style.scss";
-import axios from "axios";
-
+import axios from "../../utils/axios";
 // Cấu hình Axios Global (Chuẩn)
 axios.defaults.withCredentials = true;
 
