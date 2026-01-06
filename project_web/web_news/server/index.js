@@ -23,7 +23,7 @@ const app = express();
 // ==========================================
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://project-web-new-ten.vercel.app/" // Domain Frontend sau khi deploy (sẽ thêm sau)
+  "https://project-web-new-ten.vercel.app" // Domain Frontend sau khi deploy (sẽ thêm sau)
 ];
 
 app.use(cors({
