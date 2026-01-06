@@ -1,0 +1,496 @@
+// client/src/style_editor.scss
+
+// ==========================================
+// EDITOR STYLES
+// ==========================================
+
+// Import variables from main style file
+$light-green: #b9e7e7;
+$dark-green: teal;
+$bg-color: #f0f2f5;
+$text-color: #333;
+$gray-text: #555;
+
+// ==========================================
+// EDITOR DASHBOARD PAGE
+// ==========================================
+.editor-dashboard {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-top: 60px; // Account for navbar
+
+  .sidebar {
+    width: 280px;
+    background: white;
+    border-right: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+
+    .user-profile {
+      padding: 30px 20px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+
+      .avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 15px;
+        border: 3px solid $dark-green;
+      }
+
+      h3 {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+      }
+
+      span {
+        font-size: 14px;
+        color: $dark-green;
+        font-weight: 600;
+      }
+    }
+
+    .menu {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      button {
+        padding: 12px 16px;
+        border: none;
+        background: transparent;
+        color: #666;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 6px;
+        text-align: left;
+        transition: 0.2s;
+
+        &:hover {
+          background: #f0f0f0;
+          color: $dark-green;
+        }
+
+        &.active {
+          background: $dark-green;
+          color: white;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  .main-content-editor {
+    flex: 1;
+    margin-left: 280px;
+    padding: 30px 40px;
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+
+      h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #333;
+        margin: 0;
+      }
+
+      .btn-create {
+        padding: 12px 24px;
+        background: $dark-green;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: 0.2s;
+
+        &:hover {
+          background: #006666;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .posts-list {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+
+      p {
+        text-align: center;
+        color: #999;
+        padding: 40px;
+        font-size: 16px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+
+        thead {
+          background: #f8f9fa;
+          
+          th {
+            padding: 15px;
+            text-align: left;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            border-bottom: 2px solid #e0e0e0;
+          }
+        }
+
+        tbody {
+          tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: 0.2s;
+
+            &:hover {
+              background: #fafafa;
+            }
+
+            td {
+              padding: 15px;
+              vertical-align: middle;
+
+              .thumb {
+                width: 80px;
+                height: 60px;
+                object-fit: cover;
+                border-radius: 4px;
+              }
+
+              .status {
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 600;
+                text-transform: uppercase;
+
+                &.pending {
+                  background: #fff3cd;
+                  color: #856404;
+                }
+
+                &.approved {
+                  background: #d4edda;
+                  color: #155724;
+                }
+
+                &.rejected {
+                  background: #f8d7da;
+                  color: #721c24;
+                }
+              }
+
+              .actions {
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
+
+                .btn-edit,
+                .btn-delete,
+                .btn-view,
+                .btn-stats {
+                  padding: 6px 12px;
+                  border: none;
+                  border-radius: 4px;
+                  font-size: 13px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  text-decoration: none;
+                  display: inline-block;
+                  transition: 0.2s;
+                }
+
+                .btn-edit {
+                  background: $dark-green;
+                  color: white;
+                  &:hover { background: #006666; }
+                  &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                  }
+                }
+
+                .btn-delete {
+                  background: #dc3545;
+                  color: white;
+                  &:hover { background: #c82333; }
+                  &:disabled {
+                    opacity: 0.6;
+                    cursor: not-allowed;
+                  }
+                }
+
+                .btn-view {
+                  background: #17a2b8;
+                  color: white;
+                  &:hover { background: #138496; }
+                }
+
+                .btn-stats {
+                  background: #667eea;
+                  color: white;
+                  &:hover { background: #5568d3; }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive for Editor Dashboard
+@media (max-width: 768px) {
+  .editor-dashboard {
+    flex-direction: column;
+
+    .sidebar {
+      width: 100%;
+      position: relative;
+      height: auto;
+    }
+
+    .main-content-editor {
+      margin-left: 0;
+      padding: 20px;
+
+      .posts-list {
+        overflow-x: auto;
+      }
+    }
+  }
+}
+
+// ==========================================
+// EDITOR PROFILE CONTENT (in Profile page)
+// ==========================================
+.profile-wrapper .container .main-profile {
+  .title-with-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    border-bottom: 2px solid $dark-green;
+    padding-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 15px;
+    
+    .title {
+      margin: 0;
+      border: none;
+      padding: 0;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 14px;
+      white-space: nowrap;
+      
+      &.pending {
+        background: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffc107;
+      }
+      
+      &.approved {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #28a745;
+      }
+      
+      &.rejected {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #dc3545;
+      }
+    }
+  }
+  
+  // Editor Profile Content
+  .editor-profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    
+    .status-note-wrapper {
+      margin-bottom: 10px;
+      
+      .status-note {
+        font-size: 13px;
+        color: #856404;
+        margin: 0;
+        padding: 12px 15px;
+        background: #fffbf0;
+        border-left: 3px solid #ffc107;
+        border-radius: 4px;
+      }
+    }
+    
+    .editor-section {
+      padding-bottom: 25px;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+      }
+      
+      .section-header {
+        font-size: 18px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid $dark-green;
+        display: flex;
+        align-items: center;
+        
+        &::before {
+          content: '';
+          width: 4px;
+          height: 20px;
+          background: $dark-green;
+          margin-right: 10px;
+          border-radius: 2px;
+        }
+      }
+    }
+    
+    .editor-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      margin-top: 10px;
+      
+      .stat-card {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        transition: 0.2s;
+        
+        &:hover {
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          transform: translateY(-2px);
+        }
+        
+        &.approved {
+          border-left: 4px solid #28a745;
+          background: #f0f9f4;
+        }
+        
+        &.pending {
+          border-left: 4px solid #ffc107;
+          background: #fffbf0;
+        }
+        
+        &.rejected {
+          border-left: 4px solid #dc3545;
+          background: #fff5f5;
+        }
+        
+        .stat-icon {
+          font-size: 24px;
+          color: $dark-green;
+          flex-shrink: 0;
+        }
+        
+        .stat-content {
+          display: flex;
+          flex-direction: column;
+          
+          .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #333;
+            line-height: 1.2;
+          }
+          
+          .stat-label {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive for Editor Profile
+@media (max-width: 768px) {
+  .profile-wrapper .container .main-profile {
+    .title-with-badge {
+      flex-direction: column;
+      align-items: flex-start;
+      
+      .title {
+        font-size: 20px;
+      }
+      
+      .status-badge {
+        font-size: 12px;
+        padding: 6px 14px;
+      }
+    }
+  }
+}
+
+// ==========================================
+// WRITE PAGE - PARAGRAPH BLOCK FORMATTING
+// ==========================================
+.paragraph-block {
+  .block-controls {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .paragraph-content {
+    min-height: 2em;
+    outline: none;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+
+    &[data-placeholder]:empty:before {
+      content: attr(data-placeholder);
+      color: #999;
+    }
+  }
+}
+
