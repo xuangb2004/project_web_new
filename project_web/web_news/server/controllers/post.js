@@ -81,7 +81,7 @@ export const getPosts = (req, res) => {
       db.query(q, params, (err, data) => {
         if (err) {
           console.error("Lỗi truy vấn bài viết:", err);
-          return res.status(500).send(err);
+          return res.status(500).json({ error: err.message || err, fatal: err.fatal || false });
         }
         return res.status(200).json(data);
       });
@@ -280,7 +280,7 @@ export const getTrending = (req, res) => {
   `;
 
   db.query(q, (err, data) => {
-    if (err) return res.status(500).send(err);
+    if (err) return res.status(500).json({ error: err.message || err, fatal: err.fatal || false });
     return res.status(200).json(data);
   });
 };
