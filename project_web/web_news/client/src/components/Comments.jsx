@@ -136,7 +136,7 @@ const Comments = ({ postId }) => {
   };
 
   // Lọc comment cha và con
-  const rootComments = comments.filter(c => c.parent_id === null);
+  const rootComments = comments.filter(c => c.parent_id == null);
   const getReplies = (parentId) => comments.filter(c => c.parent_id === parentId);
 
   return (
