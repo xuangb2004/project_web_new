@@ -471,6 +471,13 @@ a { text-decoration: none; color: inherit; }
         input { flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 20px; outline: none; &:focus { border-color: $dark-green; } }
         button { background: $dark-green; color: white; padding: 10px 20px; border: none; border-radius: 20px; cursor: pointer; font-weight: bold; }
       }
+
+      /* Wrap a thread: parent + replies */
+      .comment-thread {
+        display: flex; flex-direction: column; gap: 8px;
+        position: relative;
+      }
+
       .comment {
         display: flex; gap: 15px; margin-bottom: 20px;
         img { width: 40px; height: 40px; border-radius: 50%; }
@@ -480,6 +487,31 @@ a { text-decoration: none; color: inherit; }
           p { margin: 0; font-size: 14px; color: #444; }
         }
       }
+
+      /* Replies container: align replies to the right (bottom-right of parent) */
+      .replies {
+        display: flex; flex-direction: column; gap: 8px;
+        margin-top: 6px;
+        align-items: flex-end; /* push replies to the right edge of the thread */
+      }
+
+      /* Reply items should be narrower and visually distinct */
+      .replies .comment {
+        max-width: 70%;
+        margin-left: 0;
+      }
+      .replies .comment .info {
+        background: #ffffff; border: 1px solid #eee;
+      }
+
+      /* Reply input should align with replies */
+      .reply-input {
+        margin-left: auto; /* push to right */
+        width: 70%;
+        display: flex; gap: 8px; align-items: center;
+      }
+      .reply-input input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
+      .reply-input .cancel-btn { background: #ccc; padding: 8px 10px; border-radius: 6px; border: none; cursor: pointer; }
     }
   }
 
