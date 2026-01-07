@@ -9,25 +9,27 @@ export const sendEmail = async (to, subject, htmlContent) => {
 
   if (!emailUser || !emailPass) {
     console.error("❌ Lỗi: Thiếu biến môi trường EMAIL_USER hoặc EMAIL_PASS");
-    return; // Dừng hàm để không crash server
+    return; 
   }
 
   try {
-    // CẤU HÌNH THỦ CÔNG (Thay vì dùng service: 'gmail')
-    // Cách này ổn định hơn trên Render/Cloud
+    // SỬ DỤNG CỔNG 587 VÀ IPv4 (Giải pháp sửa lỗi Timeout)
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
-      port: 465,
-      secure: true, // Dùng SSL (bắt buộc cho port 465)
+      port: 587,            // Dùng cổng 587 thay vì 465
+      secure: false,        // false cho cổng 587 (dùng STARTTLS)
       auth: {
         user: emailUser,
         pass: emailPass,
       },
-      // Tăng thời gian chờ kết nối lên 10 giây (mặc định là quá ngắn)
-      connectionTimeout: 10000, 
+      tls: {
+        rejectUnauthorized: false // Bỏ qua lỗi chứng chỉ nếu có
+      },
+      // ⚠️ QUAN TRỌNG: Ép dùng IPv4 để tránh lỗi mạng trên Render
+      family: 4, 
     });
 
-    // Kiểm tra kết nối trước khi gửi
+    // Kiểm tra kết nối
     await transporter.verify();
     console.log("✅ Kết nối Gmail thành công!");
 
@@ -44,7 +46,6 @@ export const sendEmail = async (to, subject, htmlContent) => {
 
   } catch (error) {
     console.error("❌ Gửi mail thất bại:", error.message);
-    // Không throw error để tránh làm crash server nếu gửi mail lỗi
     return null; 
   }
 };
