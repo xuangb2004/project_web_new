@@ -13,25 +13,29 @@ export const sendEmail = async (to, subject, htmlContent) => {
   }
 
   try {
-    // SỬ DỤNG CỔNG 2525 VÀ IPv4 (Giải pháp sửa lỗi Timeout)
+    // Cấu hình SMTP (Ưu tiên lấy từ ENV, nếu không có thì mặc định dùng Gmail)
+    const host = process.env.SMTP_HOST || "smtp.gmail.com";
+    const port = Number(process.env.SMTP_PORT) || 587;
+    const secure = process.env.SMTP_SECURE === "true"; // true cho 465, false cho 587
+
     const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: 2525,            // Dùng cổng 587 thay vì 465
-      secure: false,        // false cho cổng 587 (dùng STARTTLS)
+      host: host,
+      port: port,
+      secure: secure,       
       auth: {
         user: emailUser,
         pass: emailPass,
       },
       tls: {
-        rejectUnauthorized: false // Bỏ qua lỗi chứng chỉ nếu có
+        rejectUnauthorized: false
       },
-      // ⚠️ QUAN TRỌNG: Ép dùng IPv4 để tránh lỗi mạng trên Render
+      // ⚠️ QUAN TRỌNG: Ép dùng IPv4 để tránh lỗi mạng
       family: 4, 
     });
 
     // Kiểm tra kết nối
     await transporter.verify();
-    console.log("✅ Kết nối Gmail thành công!");
+    console.log(`✅ Kết nối SMTP (${host}) thành công!`);
 
     const mailOptions = {
       from: `"MyNews Admin" <${emailUser}>`,
