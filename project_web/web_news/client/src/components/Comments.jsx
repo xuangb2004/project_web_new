@@ -91,6 +91,7 @@ const Comments = ({ postId }) => {
   const renderCommentItem = (comment) => {
     const isOwner = currentUser && currentUser.id === comment.user_id;
     const isEditing = editingCommentId === comment.id;
+    const parentComment = comments.find(c => c.id === comment.parent_id);
 
     return (
       <div className="comment" key={comment.id}>
@@ -123,8 +124,11 @@ const Comments = ({ postId }) => {
                 </div>
              </div>
           ) : (
-             <p>{comment.content}</p>
-          )}
+             <>
+               {parentComment && <div className="in-reply-to">Trả lời <strong>@{parentComment.username}</strong></div>}
+               <p>{comment.content}</p>
+             </>
+          )} 
 
           <div className="actions">
              <span className="date">{moment(comment.created_at).fromNow()}</span>
@@ -161,8 +165,16 @@ const Comments = ({ postId }) => {
 
           {/* Form Reply */}
           {replyingTo === comment.id && (
-            <div className="write reply-input">
-               <input autoFocus type="text" placeholder={`Trả lời ${comment.username}...`} value={replyDesc} onChange={e => setReplyDesc(e.target.value)} />
+            <div className="write reply-input" role="form" aria-label={`Reply to ${comment.username}`}>
+               <div className="replying-to-label">Trả lời <strong>@{comment.username}</strong></div>
+               <input
+                 autoFocus
+                 type="text"
+                 placeholder={`Trả lời ${comment.username}...`}
+                 value={replyDesc}
+                 onChange={e => setReplyDesc(e.target.value)}
+                 onKeyDown={(e) => { if (e.key === 'Enter') handleSend(e, comment.id); }}
+               />
                <button onClick={(e) => handleSend(e, comment.id)}>Gửi</button>
                <button className="cancel-btn" onClick={() => setReplyingTo(null)}>Hủy</button>
             </div>

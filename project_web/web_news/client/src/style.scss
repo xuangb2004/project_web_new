@@ -500,11 +500,25 @@ a { text-decoration: none; color: inherit; }
       .replies .comment {
         max-width: 80%;
         margin-left: 0;
-        transform: translateX(-8px); /* slight shift left relative to indent */
+        transform: translateX(-8px);
         font-size: 13px;
+        margin-bottom: 6px;
       }
       .replies .comment .info {
-        background: #ffffff; border: 1px solid #eee; padding: 8px 12px; border-radius: 10px;
+        background: #ffffff; border: 1px solid #eee; padding: 6px 10px; border-radius: 10px;
+        line-height: 1.2;
+      }
+
+      .in-reply-to {
+        font-size: 12px;
+        color: $dark-green;
+        margin-bottom: 4px;
+      }
+
+      .replying-to-label {
+        font-size: 12px;
+        color: $dark-green;
+        margin-bottom: 6px;
       }
 
       /* Reply input should align with replies */
@@ -512,9 +526,13 @@ a { text-decoration: none; color: inherit; }
         margin-left: 40px; /* align with replies */
         width: calc(100% - 40px);
         display: flex; gap: 8px; align-items: center;
+        position: relative;
+        z-index: 2;
+        box-sizing: border-box;
       }
-      .reply-input input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; }
-      .reply-input .cancel-btn { background: #ccc; padding: 8px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; }
+      .reply-input input { flex: 1; padding: 6px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; height: 34px; }
+      .reply-input button, .reply-input .cancel-btn { background: $dark-green; color: white; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; height: 34px; pointer-events: auto; }
+      .reply-input .cancel-btn { background: #ccc; color: #000; }
     }
   }
 
