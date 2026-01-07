@@ -137,7 +137,10 @@ const Comments = ({ postId }) => {
 
   // Lọc comment cha và con
   const rootComments = comments.filter(c => c.parent_id == null);
-  const getReplies = (parentId) => comments.filter(c => c.parent_id === parentId);
+  // Match replies regardless of type (string/number) and sort chronologically (old -> new)
+  const getReplies = (parentId) => comments
+    .filter(c => c.parent_id == parentId)
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
   return (
     <div className="comments">
