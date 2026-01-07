@@ -8,23 +8,28 @@ export const sendEmail = async (to, subject, htmlContent) => {
   const emailPass = (process.env.EMAIL_PASS || "").trim();
 
   if (!emailUser || !emailPass) {
-    const msg = "Missing EMAIL_USER or EMAIL_PASS environment variables for sending mail.";
-    console.error(msg);
-    throw new Error(msg);
+    console.error("❌ Lỗi: Thiếu biến môi trường EMAIL_USER hoặc EMAIL_PASS");
+    return; // Dừng hàm để không crash server
   }
 
   try {
+    // CẤU HÌNH THỦ CÔNG (Thay vì dùng service: 'gmail')
+    // Cách này ổn định hơn trên Render/Cloud
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 465,
+      secure: true, // Dùng SSL (bắt buộc cho port 465)
       auth: {
         user: emailUser,
         pass: emailPass,
       },
+      // Tăng thời gian chờ kết nối lên 10 giây (mặc định là quá ngắn)
+      connectionTimeout: 10000, 
     });
 
-    // Verify transporter connection and auth
+    // Kiểm tra kết nối trước khi gửi
     await transporter.verify();
-    console.log("✅ Email transporter verified successfully for", emailUser);
+    console.log("✅ Kết nối Gmail thành công!");
 
     const mailOptions = {
       from: `"MyNews Admin" <${emailUser}>`,
@@ -34,12 +39,12 @@ export const sendEmail = async (to, subject, htmlContent) => {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Email sent successfully to ${to}. MessageId: ${info.messageId}`);
+    console.log(`✅ Email đã gửi đến: ${to}`);
     return info;
+
   } catch (error) {
-    console.error("❌ Email send failed:", error && (error.message || error));
-    console.error("Hint: ensure EMAIL_USER and EMAIL_PASS are correct. If using Gmail, create an App Password (16 chars) and put it in .env without spaces.");
-    // Re-throw so caller can log / handle the error
-    throw error;
+    console.error("❌ Gửi mail thất bại:", error.message);
+    // Không throw error để tránh làm crash server nếu gửi mail lỗi
+    return null; 
   }
 };
