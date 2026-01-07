@@ -175,7 +175,6 @@ const Comments = ({ postId }) => {
                  onChange={e => setReplyDesc(e.target.value)}
                  onKeyDown={(e) => { if (e.key === 'Enter') handleSend(e, comment.id); }}
                />
-               <button onClick={(e) => handleSend(e, comment.id)}>Gửi</button>
                <button className="cancel-btn" onClick={() => setReplyingTo(null)}>Hủy</button>
             </div>
           )}
