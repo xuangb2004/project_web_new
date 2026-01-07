@@ -3,6 +3,8 @@ import cors from "cors";
 import session from "express-session";
 import cookieParser from "cookie-parser"; 
 import multer from "multer";
+import path from "path";
+import { fileURLToPath } from "url";
 
 // Import Routes
 import authRoutes from "./routes/auth.js";
@@ -15,6 +17,9 @@ import interactionRoutes from "./routes/interactions.js";
 import categoryRoutes from "./routes/category.js";
 import reportRoutes from "./routes/reports.js";
 import aiRoutes from "./routes/ai.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
@@ -49,12 +54,16 @@ app.get('/health', (req, res) => {
 app.use(express.json());
 app.use(cookieParser()); // Đọc cookie sau khi đã qua cửa CORS
 
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
 // ==========================================
 // 3. CẤU HÌNH UPLOAD ẢNH
 // ==========================================
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "../client/public/upload"); 
+    // Save to dist/upload so they are served immediately
+    cb(null, path.join(__dirname, "../client/dist/upload"));
   },
   filename: function (req, file, cb) {
     cb(null, Date.now() + file.originalname); 
@@ -96,6 +105,12 @@ app.use("/api/interactions", interactionRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/chat", aiRoutes);
+
+// The "catchall" handler: for any request that doesn't
+// match one above, send back React's index.html file.
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+});
 
 const PORT = process.env.PORT || 8800;
 app.listen(PORT, () => {
