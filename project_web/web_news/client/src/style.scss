@@ -488,30 +488,33 @@ a { text-decoration: none; color: inherit; }
         }
       }
 
-      /* Replies container: align replies to the right (bottom-right of parent) */
+      /* Replies container: slight indent from parent, not right aligned */
       .replies {
         display: flex; flex-direction: column; gap: 8px;
         margin-top: 6px;
-        align-items: flex-end; /* push replies to the right edge of the thread */
+        align-items: flex-start; /* keep replies left-aligned with an indent */
+        padding-left: 40px; /* indent replies slightly */
       }
 
-      /* Reply items should be narrower and visually distinct */
+      /* Reply items should be narrower and visually distinct and slightly shifted */
       .replies .comment {
-        max-width: 70%;
+        max-width: 80%;
         margin-left: 0;
+        transform: translateX(-8px); /* slight shift left relative to indent */
+        font-size: 13px;
       }
       .replies .comment .info {
-        background: #ffffff; border: 1px solid #eee;
+        background: #ffffff; border: 1px solid #eee; padding: 8px 12px; border-radius: 10px;
       }
 
       /* Reply input should align with replies */
       .reply-input {
-        margin-left: auto; /* push to right */
-        width: 70%;
+        margin-left: 40px; /* align with replies */
+        width: calc(100% - 40px);
         display: flex; gap: 8px; align-items: center;
       }
-      .reply-input input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ddd; }
-      .reply-input .cancel-btn { background: #ccc; padding: 8px 10px; border-radius: 6px; border: none; cursor: pointer; }
+      .reply-input input { flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #ddd; font-size: 13px; }
+      .reply-input .cancel-btn { background: #ccc; padding: 8px 10px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; }
     }
   }
 
