@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken"; 
 // Thư viện Google Auth mới thêm
 import { OAuth2Client } from "google-auth-library";
+import { sendEmail } from "../utils/email.js";
 
 const DEFAULT_AVATAR = "https://cdn-icons-png.flaticon.com/512/149/149071.png";
 const EDITOR_ROLE_ID = 2;
@@ -158,8 +159,28 @@ export const editorRegister = (req, res) => {
       'pending'
     ];
 
-    db.query(insertQuery, [values], (insertErr) => {
+    db.query(insertQuery, [values], async (insertErr) => {
       if (insertErr) return res.status(500).json(insertErr.message || "Lỗi khi tạo tài khoản Editor");
+      
+      // Gửi email xác nhận
+      try {
+        const subject = "Xác nhận đăng ký Editor - MyNews";
+        const htmlContent = `
+          <div style="font-family: Arial, sans-serif; padding: 20px;">
+            <h2 style="color: #2c3e50;">Xin chào ${name || username},</h2>
+            <p>Yêu cầu đăng ký tài khoản <strong>Editor</strong> của bạn đã được hệ thống ghi nhận.</p>
+            <p>Trạng thái hiện tại: <span style="color: #e67e22; font-weight: bold;">Đang chờ duyệt (Pending)</span></p>
+            <p>Admin sẽ xem xét hồ sơ của bạn. Bạn sẽ nhận được email thông báo ngay khi có kết quả.</p>
+            <hr>
+            <p style="font-size: 12px; color: #7f8c8d;">Đây là email tự động, vui lòng không trả lời.</p>
+          </div>
+        `;
+        await sendEmail(email, subject, htmlContent);
+      } catch (emailErr) {
+        console.error("Gửi mail xác nhận editor thất bại:", emailErr);
+        // Không return lỗi, vẫn báo thành công vì user đã được tạo
+      }
+
       return res.status(200).json("Đăng ký Editor thành công! Vui lòng chờ Admin duyệt.");
     });
   });

@@ -141,7 +141,12 @@ export const updateUserStatus = (req, res) => {
       let emailSent = true;
       let emailErrorMessage = null;
       try {
-        await sendEmail(userEmail, subject, htmlContent);
+        const mailResult = await sendEmail(userEmail, subject, htmlContent);
+        if (!mailResult) {
+            // Nếu sendEmail trả về null/undefined nghĩa là có lỗi đã được log ở utils/email.js
+            emailSent = false;
+            emailErrorMessage = "Check server console for details (Possibly auth failed or missing env)";
+        }
       } catch (emailError) {
         console.log("Lỗi gửi mail:", emailError);
         emailSent = false;

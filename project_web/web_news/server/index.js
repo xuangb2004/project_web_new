@@ -3,8 +3,10 @@ import cors from "cors";
 import session from "express-session";
 import cookieParser from "cookie-parser"; 
 import multer from "multer";
+import dotenv from "dotenv"; // Thêm dotenv
+import { db } from "./db.js"; // Thêm import db
 
-// Import Routes
+dotenv.config(); // Load biến môi trường ngay đầu file
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/post.js";
 import adminRoutes from "./routes/admin.js"; 
@@ -73,11 +75,11 @@ app.post("/api/upload", upload.single("file"), (req, res) => {
 // Nếu bạn dùng JWT token (access_token) thì cái này không thực sự tác động đến Login,
 // nhưng nếu muốn giữ lại thì để ở đây.
 app.use(session({
-  secret: "secret-key",
+  secret: process.env.SESSION_SECRET || "secret-key",
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false,
+    secure: false, // Set true nếu dùng HTTPS
     httpOnly: true,
     maxAge: 24 * 60 * 60 * 1000
   }
