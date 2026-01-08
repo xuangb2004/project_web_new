@@ -15,8 +15,9 @@ export const sendEmail = async (to, subject, htmlContent) => {
   try {
     // Cấu hình SMTP (Ưu tiên lấy từ ENV, nếu không có thì mặc định dùng Gmail)
     const host = process.env.SMTP_HOST || "smtp.gmail.com";
-    const port = Number(process.env.SMTP_PORT) || 587;
-    const secure = process.env.SMTP_SECURE === "true"; // true cho 465, false cho 587
+    // Nếu dùng Gmail mà không cấu hình PORT -> Tự động dùng 465 (SSL) an toàn hơn 587 trên cloud
+    const port = Number(process.env.SMTP_PORT) || (host === "smtp.gmail.com" ? 465 : 587);
+    const secure = process.env.SMTP_SECURE === "true" || port === 465; // 465 luôn cần secure: true
 
     const transporter = nodemailer.createTransport({
       host: host,
@@ -29,8 +30,12 @@ export const sendEmail = async (to, subject, htmlContent) => {
       tls: {
         rejectUnauthorized: false
       },
-      // ⚠️ QUAN TRỌNG: Ép dùng IPv4 để tránh lỗi mạng
+      // ⚠️ QUAN TRỌNG: Ép dùng IPv4 để tránh lỗi mạng trên Render/Cloud
       family: 4, 
+      // Thêm timeout để tránh treo (10s)
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000
     });
 
     // Kiểm tra kết nối
