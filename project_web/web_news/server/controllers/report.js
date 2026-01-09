@@ -50,7 +50,7 @@ export const getReportsForPost = (req, res) => {
 export const checkReport = (req, res) => {
   const { userId, postId } = req.query; 
 
-  const q = "SELECT * FROM reports WHERE user_id = ? AND post_id = ?";
+  const q = "SELECT * FROM Reports WHERE user_id = ? AND post_id = ?";
 
   db.query(q, [userId, postId], (err, data) => {
     if (err) return res.status(500).json(err);
