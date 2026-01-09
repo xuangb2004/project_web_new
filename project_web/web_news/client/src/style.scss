@@ -1649,3 +1649,112 @@ footer {
     grid-template-columns: 1fr; // Màn hình bé tí hiện 1 cột
   }
 }
+@media (max-width: 768px) {
+  .navbar {
+    height: auto; // Cho phép chiều cao tự động giãn
+    padding: 10px 0;
+
+    .container {
+      flex-direction: column; // Xếp Logo lên trên, Menu xuống dưới
+      gap: 15px;
+      padding: 0 15px;
+
+      .logo {
+        margin: 0;
+        text-align: center;
+        width: 100%;
+      }
+
+      // Hiện lại menu links (trước đó bị display: none)
+      .links {
+        display: flex !important; 
+        width: 100%;
+        overflow-x: auto; // Cho phép trượt ngang
+        white-space: nowrap; // Không xuống dòng
+        gap: 15px;
+        padding-bottom: 5px;
+        align-items: center;
+        
+        // Ẩn thanh cuộn xấu xí nhưng vẫn trượt được
+        &::-webkit-scrollbar {
+          display: none; 
+        }
+
+        .link h6 {
+          font-size: 13px; // Giảm cỡ chữ chút cho gọn
+        }
+
+        // Ẩn thanh search trên menu ngang (hoặc để lại nếu muốn)
+        .search-bar {
+          display: none; 
+        }
+
+        // Tinh chỉnh hiển thị User trên mobile
+        .user-menu-container {
+           margin-left: auto; // Đẩy user về cuối
+        }
+        
+        .login-link {
+           white-space: nowrap;
+        }
+      }
+    }
+  }
+
+  // Thêm thanh search riêng cho mobile nằm dưới menu (Optional)
+  .mobile-search-bar {
+     display: block;
+     padding: 10px 15px;
+     background: white;
+  }
+}
+
+/* 2. Sửa lỗi Form Đăng nhập/Đăng ký bị tràn trên màn hình nhỏ */
+@media (max-width: 480px) {
+  .auth form {
+    width: 90%; // Thay vì fix cứng 400px
+    padding: 30px 20px;
+    
+    input {
+      font-size: 16px; // Tránh lỗi zoom trên iPhone
+    }
+  }
+}
+
+/* 3. Tinh chỉnh lại trang Bài viết chi tiết (Single Post) trên Mobile */
+@media (max-width: 768px) {
+  .single {
+    padding-top: 130px; // Tăng padding-top vì Navbar mobile cao hơn
+    padding-left: 15px;
+    padding-right: 15px;
+
+    .content {
+      padding: 15px; // Giảm padding nội dung
+      
+      h1 {
+        font-size: 24px; // Giảm cỡ chữ tiêu đề
+      }
+
+      .user {
+        flex-direction: column; // Avatar và Tên xếp dọc cho đỡ chật
+        align-items: flex-start;
+        
+        .edit {
+           margin-left: 0;
+           margin-top: 10px;
+        }
+      }
+
+      // Sửa lỗi phần Comment bị thụt lề quá sâu
+      .comments {
+        .replies {
+          padding-left: 15px; // Giảm thụt đầu dòng comment con
+        }
+        .reply-input {
+          margin-left: 15px;
+          width: calc(100% - 15px);
+        }
+      }
+    }
+  }
+}
