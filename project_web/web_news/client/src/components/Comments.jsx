@@ -149,6 +149,40 @@ const Comments = ({ postId }) => {
     .filter(c => c.parent_id == parentId)
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 
+  const renderReplyForm = (targetId, targetUsername) => {
+    return (
+      <div className="write reply-input" style={{ marginLeft: "40px", marginTop: "10px" }}>
+        <div className="replying-to-label" style={{ fontSize: "12px", marginBottom: "5px", color: "#666" }}>
+          Trả lời <strong>@{targetUsername}</strong>
+        </div>
+        <input
+          autoFocus
+          type="text"
+          placeholder={`Trả lời ${targetUsername}...`}
+          value={replyDesc}
+          onChange={(e) => setReplyDesc(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleSend(e, targetId); }}
+          style={{ width: "100%", padding: "5px", marginBottom: "5px" }}
+        />
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            onClick={(e) => handleSend(e, targetId)}
+            style={{ border: "none", background: "teal", color: "white", padding: "5px 10px", cursor: "pointer", borderRadius: "3px" }}
+          >
+            Gửi
+          </button>
+          <button
+            className="cancel-btn"
+            onClick={() => { setReplyingTo(null); setReplyDesc(""); }}
+            style={{ border: "none", background: "#ccc", color: "black", padding: "5px 10px", cursor: "pointer", borderRadius: "3px" }}
+          >
+            Hủy
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="comments">
       <div className="write">
@@ -163,25 +197,18 @@ const Comments = ({ postId }) => {
           {/* Render Comment Cha */}
           {renderCommentItem(comment)}
 
-          {/* Form Reply */}
-          {replyingTo === comment.id && (
-            <div className="write reply-input" role="form" aria-label={`Reply to ${comment.username}`}>
-               <div className="replying-to-label">Trả lời <strong>@{comment.username}</strong></div>
-               <input
-                 autoFocus
-                 type="text"
-                 placeholder={`Trả lời ${comment.username}...`}
-                 value={replyDesc}
-                 onChange={e => setReplyDesc(e.target.value)}
-                 onKeyDown={(e) => { if (e.key === 'Enter') handleSend(e, comment.id); }}
-               />
-               <button className="cancel-btn" onClick={() => setReplyingTo(null)}>Hủy</button>
-            </div>
-          )}
+          {/* Form Reply for parent comment */}
+          {replyingTo === comment.id && renderReplyForm(comment.id, comment.username)}
 
           {/* Render List Comment Con */}
-          <div className="replies">
-            {getReplies(comment.id).map(reply => renderCommentItem(reply))}
+          <div className="replies" style={{ paddingLeft: "20px" }}>
+            {getReplies(comment.id).map(reply => (
+              <div key={reply.id}>
+                 {renderCommentItem(reply)}
+                 {/* Reply form for child comment */}
+                 {replyingTo === reply.id && renderReplyForm(reply.id, reply.username)}
+              </div>
+            ))}
           </div>
         </div>
       ))}
