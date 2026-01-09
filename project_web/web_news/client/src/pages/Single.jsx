@@ -33,9 +33,19 @@ const Single = () => {
         setPost(res.data);
 
         // B. --- BỔ SUNG: LẤY DANH SÁCH LIKE ---
-        // Dòng này giúp React biết user đã like hay chưa ngay khi load trang
         const resLikes = await axios.get(`/likes?postId=${postId}`);
         setLikes(resLikes.data);
+
+        // --- CHỈ GỌI HISTORY KHI ĐÃ CÓ DATA VÀ STATUS LÀ APPROVED ---
+        if (currentUser && res.data.status === 'approved') {
+          try {
+            await axios.post("/users/history", { postId: postId });
+            console.log("Đã lưu lịch sử xem");
+          } catch (err) {
+            console.log("Lỗi lưu lịch sử:", err);
+          }
+        }
+        // ---------------------------------------------------------------
 
       } catch (err) {
         console.log("Lỗi tải dữ liệu:", err);
@@ -49,14 +59,6 @@ const Single = () => {
           // setIsReported(resReport.data);
         } catch (err) {
           console.log("Lỗi kiểm tra report:", err); // Chỉ log lỗi, không chặn code
-        }
-
-        // 3. Lưu lịch sử xem (Chạy độc lập)
-        try {
-           await axios.post("/users/history", { postId: postId });
-           console.log("Đã lưu lịch sử xem");
-        } catch (err) {
-           console.log("Lỗi lưu lịch sử:", err);
         }
       }
     };

@@ -159,11 +159,15 @@ export const getHistory = (req, res) => {
   // Sửa 'viewed_posts' thành 'readhistory'
   // Lưu ý: Kiểm tra cột thời gian là 'created_at' hay 'viewed_at' trong DB của bạn
   const q = `
-    SELECT p.*, rh.created_at as viewed_at 
-    FROM readhistory rh 
-    JOIN posts p ON rh.post_id = p.id 
-    WHERE rh.user_id = ? 
-    ORDER BY rh.created_at DESC
+    SELECT p.id, p.title, p.thumbnail, p.cat, c.name AS cat_name, h.viewed_at,
+           (SELECT COUNT(*) FROM Likes WHERE user_id = ? AND post_id = p.id) AS is_liked,
+           (SELECT COUNT(*) FROM Bookmarks WHERE user_id = ? AND post_id = p.id) AS is_saved
+    FROM ReadHistory h
+    JOIN Posts p ON h.post_id = p.id
+    LEFT JOIN Categories c ON p.cat = c.id
+    WHERE h.user_id = ? 
+      AND p.status = 'approved'  <-- THÊM DÒNG NÀY
+    ORDER BY h.viewed_at DESC
   `;
 
   db.query(q, [userId], (err, data) => {
