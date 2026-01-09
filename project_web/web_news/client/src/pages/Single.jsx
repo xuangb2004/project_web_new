@@ -35,7 +35,11 @@ const Single = () => {
         // B. --- BỔ SUNG: LẤY DANH SÁCH LIKE ---
         const resLikes = await axios.get(`/likes?postId=${postId}`);
         setLikes(resLikes.data);
-
+        if (currentUser) {
+            // Gọi API /check vừa tạo ở Bước 1
+            const resSaved = await axios.get(`/interactions/bookmarks/check?postId=${postId}&userId=${currentUser.id}`);
+            setIsSaved(resSaved.data); // Server trả về true/false -> Cập nhật vào state
+        }
         // --- CHỈ GỌI HISTORY KHI ĐÃ CÓ DATA VÀ STATUS LÀ APPROVED ---
         if (currentUser && res.data.status === 'approved') {
           try {

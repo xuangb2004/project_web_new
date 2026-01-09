@@ -175,3 +175,12 @@ export const getHistory = (req, res) => {
     return res.status(200).json(data);
   });
 };
+export const checkBookmark = (req, res) => {
+  const q = "SELECT id FROM Bookmarks WHERE user_id = ? AND post_id = ?";
+  
+  db.query(q, [req.query.userId, req.query.postId], (err, data) => {
+    if (err) return res.status(500).json(err);
+    // Nếu tìm thấy dòng nào (length > 0) nghĩa là đã lưu -> trả về true
+    return res.status(200).json(data.length > 0); 
+  });
+};
