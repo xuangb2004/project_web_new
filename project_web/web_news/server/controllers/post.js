@@ -94,7 +94,7 @@ export const getPosts = (req, res) => {
 // =========================================================
 export const getPost = (req, res) => {
   const q =
-    "SELECT p.id, u.username, p.title, p.content, p.thumbnail, u.avatar, p.category_id, c.name as cat_name, COALESCE(ns.view_count, 0) as view_count, p.created_at as date " +
+    "SELECT p.id, u.username, p.title, p.content, p.thumbnail, u.avatar, p.category_id, c.name as cat_name, COALESCE(ns.view_count, 0) as view_count, p.created_at as date, p.status, p.user_id as uid " +
     "FROM Posts p " +
     "JOIN Users u ON u.id = p.user_id " +
     "LEFT JOIN Categories c ON c.id = p.category_id " +
@@ -103,6 +103,7 @@ export const getPost = (req, res) => {
 
   db.query(q, [req.params.id], (err, data) => {
     if (err) return res.status(500).json(err);
+    if (data.length === 0) return res.status(404).json("Post not found!");
     return res.status(200).json(data[0]);
   });
 };

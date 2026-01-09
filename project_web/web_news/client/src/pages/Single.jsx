@@ -226,6 +226,24 @@ const handleLike = async () => {
     } catch (err) { console.log(err); }
   };
 
+  // --- LOGIC CHẶN XEM BÀI CHƯA DUYỆT ---
+  const isAuthor = currentUser && post.uid && currentUser.id === post.uid;
+  const isAdmin = currentUser && currentUser.role === 'admin';
+
+  // Kiểm tra: Nếu bài chưa load xong thì bỏ qua, nếu load xong rồi mới check
+  if (post.status && post.status !== "approved" && !isAuthor && !isAdmin) {
+    return (
+      <div className="single" style={{ marginTop: "100px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
+        <h2 style={{ color: "#d32f2f" }}>Không thể truy cập</h2>
+        <p>Bài viết này đang ở trạng thái <b>Chờ duyệt</b> hoặc đã bị ẩn.</p>
+        <p>Chỉ tác giả bài viết mới có thể xem bản nháp này.</p>
+        <Link to="/" style={{ padding: "10px 20px", background: "teal", color: "white", borderRadius: "5px" }}>
+          Về trang chủ
+        </Link>
+      </div>
+    );
+  }
+
   if (!post.title) return <div className="single" style={{marginTop: "100px", textAlign:"center"}}>Đang tải bài viết...</div>;
 
   return (
@@ -234,6 +252,20 @@ const handleLike = async () => {
       
       {/* --- CỘT TRÁI: NỘI DUNG CHÍNH (70%) --- */}
       <div className="content">
+        
+        {/* Gợi ý: Thêm cảnh báo cho tác giả nếu đang xem bài chờ duyệt */}
+        {post.status === 'pending' && (
+            <div style={{
+                padding: "15px", 
+                marginBottom: "20px", 
+                background: "#fff3cd", 
+                color: "#856404", 
+                border: "1px solid #ffeeba",
+                borderRadius: "5px"
+            }}>
+                <strong>Lưu ý:</strong> Bài viết này đang chờ duyệt. Chỉ bạn (tác giả) mới nhìn thấy nội dung này.
+            </div>
+        )}
         
         {/* THÊM CLASS 'hero-image' ĐỂ KHỚP VỚI CSS STYLE MỚI */}
         <img src={post.thumbnail} alt="" className="hero-image" />
