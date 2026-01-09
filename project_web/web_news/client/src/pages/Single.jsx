@@ -27,20 +27,26 @@ const Single = () => {
   // 1. Fetch Dữ liệu bài viết, Likes & Bookmark
   useEffect(() => {
     const fetchData = async () => {
-      // 1. Lấy bài viết (Quan trọng nhất)
       try {
+        // A. Lấy thông tin bài viết
         const res = await axios.get(`/posts/${postId}`);
         setPost(res.data);
+
+        // B. --- BỔ SUNG: LẤY DANH SÁCH LIKE ---
+        // Dòng này giúp React biết user đã like hay chưa ngay khi load trang
+        const resLikes = await axios.get(`/likes?postId=${postId}`);
+        setLikes(resLikes.data);
+
       } catch (err) {
-        console.log("Lỗi tải bài viết:", err);
+        console.log("Lỗi tải dữ liệu:", err);
       }
 
-      // 2. Kiểm tra Report (Nếu lỗi cũng không sao, không chặn các cái khác)
+      // C. Kiểm tra Report (Nếu lỗi cũng không sao, không chặn các cái khác)
       if (currentUser) {
         try {
           const resReport = await axios.get(`/reports/check?postId=${postId}&userId=${currentUser.id}`);
           // Giả sử bạn có state isReported
-          // setIsReported(resReport.data); 
+          // setIsReported(resReport.data);
         } catch (err) {
           console.log("Lỗi kiểm tra report:", err); // Chỉ log lỗi, không chặn code
         }
@@ -54,7 +60,7 @@ const Single = () => {
         }
       }
     };
-    
+
     fetchData();
     window.scrollTo(0, 0);
   }, [postId, currentUser]);
