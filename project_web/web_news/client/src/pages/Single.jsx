@@ -150,18 +150,34 @@ const Single = () => {
   }, [post.content]);
 
   // 3. Xử lý Like & Bookmark & Delete
-  const handleLike = async () => {
-    if (!currentUser) return alert("Bạn cần đăng nhập!");
-    try {
-      if (likes.includes(currentUser.id)) {
-        await axios.delete(`/likes?postId=${postId}&userId=${currentUser.id}`);
-        setLikes(likes.filter((id) => id !== currentUser.id));
-      } else {
-        await axios.post("/likes", { user_id: currentUser.id, post_id: postId });
-        setLikes([...likes, currentUser.id]);
-      }
-    } catch (err) { console.log(err); }
-  };
+  // Giả sử bạn có state 'likes' chứa danh sách user_id đã like
+// và biến 'currentUser' từ context
+
+const handleLike = async () => {
+  if (!currentUser) return; // Bắt buộc đăng nhập
+
+  // Kiểm tra xem user hiện tại đã có trong danh sách like chưa
+  const hasLiked = likes.includes(currentUser.id);
+
+  try {
+    if (hasLiked) {
+      // TRƯỜNG HỢP 1: Đã like rồi -> Gọi API DELETE để Bỏ Like
+      // Lưu ý: Controller deleteLike của bạn dùng req.query
+      await axios.delete(`/likes?postId=${post.id}&userId=${currentUser.id}`);
+      
+      // Cập nhật UI ngay lập tức (Optional)
+      setLikes(likes.filter((id) => id !== currentUser.id));
+    } else {
+      // TRƯỜNG HỢP 2: Chưa like -> Gọi API POST để Thêm Like
+      await axios.post("/likes", { post_id: post.id, user_id: currentUser.id });
+      
+      // Cập nhật UI ngay lập tức (Optional)
+      setLikes([...likes, currentUser.id]);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
 
   const handleBookmark = async () => {
     if (!currentUser) return alert("Bạn cần đăng nhập để lưu bài!");

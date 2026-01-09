@@ -14,12 +14,17 @@ export const getLikes = (req, res) => {
 };
 
 export const addLike = (req, res) => {
-  // SỬA: Viết hoa tên bảng Likes
-  const q = "INSERT INTO Likes (`user_id`,`post_id`) VALUES (?)";
+  // Thêm IGNORE: Nếu trùng thì SQL sẽ lờ đi, không báo lỗi, nhưng cũng không thêm mới
+  const q = "INSERT IGNORE INTO Likes (`user_id`,`post_id`) VALUES (?)";
+  
   const values = [req.body.user_id, req.body.post_id];
 
   db.query(q, [values], (err, data) => {
     if (err) {
+      // Nếu không dùng INSERT IGNORE, bạn có thể check mã lỗi ở đây
+      if (err.code === 'ER_DUP_ENTRY') {
+         return res.status(409).json("Bạn đã like bài viết này rồi.");
+      }
       console.log("Lỗi SQL Like:", err);
       return res.status(500).json(err);
     }
