@@ -83,7 +83,7 @@ const Home = () => {
                 </Link>
                 <div className="meta">
                    <span className="source">{post.cat_name || "Tổng hợp"}</span> 
-                   <span className="time">{moment(post.created_at).fromNow()} • {post.view_count || 0} lượt xem</span>
+                   <span className="time">• {moment(post.created_at).fromNow()} • {post.view_count || 0} lượt xem</span>
                 </div>
               </div>
               <div className="img-container">
