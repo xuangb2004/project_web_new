@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import { useLocation, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import axios from "../utils/axios";
+import { FaImages, FaHeading , FaParagraph, FaLink,FaFileImage  } from "react-icons/fa";
 import "../style_editor.scss";
 
 // Block component types
@@ -190,7 +191,6 @@ const ImageBlock = ({ block, onUpdate, onDelete }) => {
     </div>
   );
 };
-
 const GalleryBlock = ({ block, onUpdate, onDelete }) => {
   const [images, setImages] = useState(block.data.images || [{ url: "", alt: "" }]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -546,7 +546,6 @@ const GalleryBlock = ({ block, onUpdate, onDelete }) => {
     </div>
   );
 };
-
 const ArticleReferenceBlock = ({ block, onUpdate, onDelete }) => {
   const [articles, setArticles] = useState([]);
   const [searchTerm, setSearchTerm] = useState(block.data.article?.title || "");
@@ -1356,6 +1355,8 @@ const Write = () => {
               backgroundColor: "#4CAF50",
               color: "white",
               border: "none",
+              borderColor: "transparent",
+              outline: "none",
               borderRadius: "6px",
               cursor: "pointer",
               fontWeight: "bold",
@@ -1370,7 +1371,7 @@ const Write = () => {
             onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
             title="Thêm Tiêu đề"
           >
-            H
+            <FaHeading/>
           </button>
           <button
             onClick={() => addBlock(BlockTypes.PARAGRAPH)}
@@ -1379,6 +1380,8 @@ const Write = () => {
               backgroundColor: "#2196F3",
               color: "white",
               border: "none",
+              borderColor: "transparent",
+              outline: "none",
               borderRadius: "6px",
               cursor: "pointer",
               fontWeight: "bold",
@@ -1393,7 +1396,7 @@ const Write = () => {
             onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
             title="Thêm Đoạn văn"
           >
-            P
+            <FaParagraph />
           </button>
           <button
             onClick={() => addBlock(BlockTypes.IMAGE)}
@@ -1402,6 +1405,8 @@ const Write = () => {
               backgroundColor: "#FF9800",
               color: "white",
               border: "none",
+              borderColor: "transparent",
+              outline: "none",
               borderRadius: "6px",
               cursor: "pointer",
               fontWeight: "bold",
@@ -1416,15 +1421,17 @@ const Write = () => {
             onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
             title="Thêm Ảnh"
           >
-            🖼️
+            <FaFileImage/>
           </button>
           <button
             onClick={() => addBlock(BlockTypes.GALLERY)}
             style={{
               padding: "12px",
-              backgroundColor: "#9C27B0",
+              backgroundColor: "#000000",
               color: "white",
               border: "none",
+              borderColor: "transparent",
+              outline: "none",
               borderRadius: "6px",
               cursor: "pointer",
               fontWeight: "bold",
@@ -1435,11 +1442,17 @@ const Write = () => {
               justifyContent: "center",
               transition: "all 0.2s ease"
             }}
-            onMouseEnter={(e) => e.target.style.transform = "scale(1.05)"}
-            onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
+            onMouseEnter={(e) => {
+              e.target.style.transform = "scale(1.05)";
+              e.target.style.backgroundColor = "#333333";
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.transform = "scale(1)";
+              e.target.style.backgroundColor = "#000000";
+            }}
             title="Thêm Gallery"
           >
-            🖼️🖼️
+            <FaImages />
           </button>
           <button
             onClick={() => addBlock(BlockTypes.ARTICLE_REFERENCE)}
@@ -1448,6 +1461,8 @@ const Write = () => {
               backgroundColor: "#E91E63",
               color: "white",
               border: "none",
+              borderColor: "transparent",
+              outline: "none",
               borderRadius: "6px",
               cursor: "pointer",
               fontWeight: "bold",
@@ -1462,7 +1477,7 @@ const Write = () => {
             onMouseLeave={(e) => e.target.style.transform = "scale(1)"}
             title="Thêm Tham chiếu Bài viết"
           >
-            🔗
+            <FaLink />
           </button>
         </div>
         
