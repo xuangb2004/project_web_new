@@ -25,7 +25,7 @@ const Profile = () => {
     gender: currentUser?.gender || "male",
   });
 
-  // State lưu thống kê (MỚI)
+  // State lưu thống kê
   const [stats, setStats] = useState({ savedCount: 0, viewedCount: 0 });
   const [editorStats, setEditorStats] = useState(null);
   const [status, setStatus] = useState(null);
@@ -62,29 +62,40 @@ const Profile = () => {
     setInputs((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
+  // --- PHẦN ĐÃ SỬA: HANDLE UPLOAD ---
   const handleUpload = async (e) => {
     try {
       const file = e.target.files[0];
       if (!file) return;
+      
       const formData = new FormData();
       formData.append("file", file);
+      
       const res = await axios.post("/upload", formData);
-      const fileName = res.data;
-      const avatarUrl = `/upload/${fileName}`; 
+      
+      // SỬA Ở ĐÂY: Backend Cloudinary trả về URL đầy đủ, dùng trực tiếp luôn
+      const avatarUrl = res.data; 
+      
       setInputs((prev) => ({ ...prev, avatar: avatarUrl }));
     } catch (err) { 
       console.error(err);
       alert("Lỗi upload ảnh!"); 
     }
   };
+  // ----------------------------------
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     try {
       await axios.put(`/users/${currentUser.id}`, inputs);
+      
+      // Cập nhật lại localStorage để không cần reload trang vẫn thấy info mới
       const updatedUser = { ...currentUser, ...inputs };
       localStorage.setItem("user", JSON.stringify(updatedUser));
+      
       setStatus("Cập nhật thành công!");
+      
+      // Reload để đảm bảo đồng bộ hoàn toàn (tùy chọn)
       setTimeout(() => window.location.reload(), 1000);
     } catch (err) { 
       console.error(err);

@@ -3,7 +3,8 @@ import cors from "cors";
 import session from "express-session";
 import cookieParser from "cookie-parser"; 
 import multer from "multer";
-
+import { v2 as cloudinary } from "cloudinary";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
 // Import Routes
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/post.js";
@@ -82,7 +83,32 @@ app.use(session({
     maxAge: 24 * 60 * 60 * 1000
   }
 }));
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_KEY,
+  api_secret: process.env.CLOUDINARY_SECRET
+});
 
+// Cấu hình kho lưu trữ trên Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'web_news_uploads', // Tên thư mục trên Cloudinary
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'], // Định dạng cho phép
+  },
+});
+
+const upload = multer({ storage: storage });
+
+// API Upload
+app.post("/api/upload", upload.single("file"), (req, res) => {
+  // Khi dùng Cloudinary, đường dẫn ảnh đầy đủ sẽ nằm trong req.file.path
+  // Ví dụ: https://res.cloudinary.com/demo/image/upload/v16.../anh.jpg
+  if (!req.file) {
+      return res.status(400).json("No file uploaded");
+  }
+  res.status(200).json(req.file.path); // Trả về đường dẫn ảnh Online
+});
 // ==========================================
 // 5. ROUTES
 // ==========================================
