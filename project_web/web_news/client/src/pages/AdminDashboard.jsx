@@ -438,7 +438,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* TAB: REPORTS (Giữ nguyên) */}
+      {/* TAB: REPORTS */}
         {activeTab === "reports" && (
           <div className="reports-section">
             <h2>Báo Cáo Vi Phạm</h2>
@@ -449,9 +449,10 @@ const AdminDashboard = () => {
                 <table>
                   <thead>
                     <tr>
-                      <th style={{width: "40%"}}>Bài Viết</th>
+                      <th style={{width: "30%"}}>Bài Viết</th>
+                      <th style={{width: "30%"}}>Lý Do Báo Cáo</th> {/* THÊM CỘT NÀY */}
                       <th>Tác Giả</th>
-                      <th style={{textAlign: "center"}}>Số Lượng Báo Cáo</th>
+                      <th style={{textAlign: "center"}}>Số Lượng</th>
                       <th style={{textAlign: "center"}}>Hành Động</th>
                     </tr>
                   </thead>
@@ -459,10 +460,28 @@ const AdminDashboard = () => {
                     {reportedPosts.map((post) => (
                       <tr key={post.id}>
                         <td>
+                          {/* Link xem bài viết đã sửa ở bước trước */}
                           <a href={`/post/${post.id}`} target="_blank" rel="noreferrer" className="post-link">
-                            {post.title}
+                            {post.title} <span style={{fontSize: "12px", color: "#4361ee"}}>↗</span>
                           </a>
                         </td>
+                        
+                        {/* --- THÊM PHẦN HIỂN THỊ LÝ DO --- */}
+                        <td>
+                           <div style={{
+                              maxHeight: "80px", 
+                              overflowY: "auto", 
+                              fontSize: "13px", 
+                              color: "#d32f2f", 
+                              background: "#fff5f5", 
+                              padding: "5px", 
+                              borderRadius: "4px"
+                           }}>
+                              {post.reasons}
+                           </div>
+                        </td>
+                        {/* -------------------------------- */}
+
                         <td>
                           <div className="user-info">
                             <div style={{display: "flex", flexDirection: "column"}}>

@@ -153,15 +153,22 @@ export const deletePost = (req, res) => {
   });
 };
 
+// server/controllers/admin.js
+
 export const getReportedPosts = (req, res) => {
+  // Thay đổi: Thêm dòng GROUP_CONCAT(r.reason SEPARATOR '; ') as reasons
+8  
   const q = `
-    SELECT p.id, p.title, u.username as author_name, COUNT(r.id) as report_count
+    SELECT p.id, p.title, u.username as author_name, 
+           COUNT(r.id) as report_count,
+           GROUP_CONCAT(r.reason SEPARATOR '; ') as reasons
     FROM Posts p
     JOIN Users u ON p.user_id = u.id
     JOIN Reports r ON p.id = r.post_id
     GROUP BY p.id
     ORDER BY report_count DESC
   `;
+
   db.query(q, (err, data) => {
     if (err) return res.status(500).json(err);
     return res.status(200).json(data);
