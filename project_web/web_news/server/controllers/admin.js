@@ -6,7 +6,9 @@ export const getDashboardStats = (req, res) => {
   const q = `
     SELECT 
       (SELECT COUNT(*) FROM Users WHERE role_id = 3) as total_users,
-      (SELECT COUNT(*) FROM Users WHERE role_id = 2) as total_editors,
+      -- SỬA DÒNG DƯỚI ĐÂY: Thêm "AND status = 'approved'"
+      (SELECT COUNT(*) FROM Users WHERE role_id = 2 AND status = 'approved') as total_editors, 
+      
       (SELECT COUNT(*) FROM Posts) as total_posts,
       (SELECT COALESCE(SUM(ns.view_count), 0) FROM NewsStats ns) as total_views, 
       (SELECT COUNT(*) FROM Posts WHERE status = 'pending') as pending_posts

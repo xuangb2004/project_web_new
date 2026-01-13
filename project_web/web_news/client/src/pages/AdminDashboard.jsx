@@ -29,7 +29,7 @@ const AdminDashboard = () => {
   const [pendingPosts, setPendingPosts] = useState([]);
   const [reportedPosts, setReportedPosts] = useState([]);
 
-  // --- LOGIC NGÀY THÁNG MỚI ---
+  // --- LOGIC NGÀY THÁNG ---
   const today = new Date().toISOString().split('T')[0]; // Ngày hôm nay
   const [startDate, setStartDate] = useState(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
   const [endDate, setEndDate] = useState(today);
@@ -44,7 +44,6 @@ const AdminDashboard = () => {
     setEndDate(end.toISOString().split('T')[0]);
     setStartDate(start.toISOString().split('T')[0]);
   };
-  // -----------------------------
 
   useEffect(() => {
     if (!currentUser) {
@@ -110,6 +109,9 @@ const AdminDashboard = () => {
         alert("Đã duyệt Editor thành công!");
       }
       setPendingEditors(pendingEditors.filter((editor) => editor.id !== userId));
+      // Refresh list editor chính thức để cập nhật số lượng
+      const updatedEditors = await axios.get("/admin/editors");
+      setEditors(updatedEditors.data);
     } catch (err) {
       console.error(err);
       alert("Lỗi khi duyệt Editor!");
@@ -281,47 +283,42 @@ const AdminDashboard = () => {
               </div>
               <div className="card purple">
                 <h3>Editors</h3>
-                <p className="number">{stats.total_editors}</p>
+                {/* SỬA LỖI HIỂN THỊ Ở ĐÂY: Dùng editors.length thay vì stats.total_editors */}
+                <p className="number">{editors.length}</p>
                 <span className="desc">Nhân sự nội dung</span>
               </div>
             </div>
 
-            {/* --- KHU VỰC BIỂU ĐỒ (Đã Nâng Cấp) --- */}
+            {/* --- KHU VỰC BIỂU ĐỒ --- */}
             <div className="chart-container" style={{background: 'white', padding: '20px', margin: '20px 0', borderRadius: '8px', boxShadow: "0 2px 8px rgba(0,0,0,0.1)"}}>
               <div className="chart-header" style={{display:"flex", flexWrap: "wrap", justifyContent:"space-between", alignItems:"center", marginBottom:"20px", gap: "15px"}}>
                 <h3 style={{margin: 0}}>Thống kê tương tác</h3>
                 
                 <div className="filters" style={{display:"flex", alignItems:"center", gap:"15px", flexWrap: "wrap"}}>
-                   {/* Nút chọn nhanh */}
                    <div className="quick-actions" style={{display: "flex", gap: "5px"}}>
                       <button onClick={() => handleQuickSelect(7)} style={{padding: "6px 12px", fontSize: "13px", border: "1px solid #ddd", background: "#f8f9fa", cursor: "pointer", borderRadius: "4px"}}>7 ngày</button>
                       <button onClick={() => handleQuickSelect(30)} style={{padding: "6px 12px", fontSize: "13px", border: "1px solid #ddd", background: "#f8f9fa", cursor: "pointer", borderRadius: "4px"}}>30 ngày</button>
                    </div>
-
                    <span style={{color: "#ccc"}}>|</span>
-
-                   {/* Bộ chọn ngày có ràng buộc min/max */}
                    <div className="date-inputs" style={{display: "flex", alignItems: "center", gap: "10px"}}>
                       <div style={{position: "relative"}}>
                         <span style={{fontSize: "11px", color: "#666", display: "block", marginBottom: "2px"}}>Từ ngày</span>
                         <input 
                             type="date" 
                             value={startDate} 
-                            max={endDate} // Chặn: Start không được lớn hơn End
+                            max={endDate}
                             onChange={e => setStartDate(e.target.value)}
                             style={{padding: "6px", border: "1px solid #ddd", borderRadius: "4px"}}
                         />
                       </div>
-                      
                       <span style={{marginTop: "18px", color: "#666"}}>➔</span>
-                      
                       <div style={{position: "relative"}}>
                         <span style={{fontSize: "11px", color: "#666", display: "block", marginBottom: "2px"}}>Đến ngày</span>
                         <input 
                             type="date" 
                             value={endDate} 
-                            min={startDate} // Chặn: End không được nhỏ hơn Start
-                            max={today}     // Chặn: End không được quá hôm nay
+                            min={startDate}
+                            max={today}
                             onChange={e => setEndDate(e.target.value)}
                             style={{padding: "6px", border: "1px solid #ddd", borderRadius: "4px"}}
                         />
@@ -329,8 +326,6 @@ const AdminDashboard = () => {
                    </div>
                 </div>
               </div>
-              
-              {/* Chart */}
               <div style={{height: "400px"}}>
                 <Bar 
                   data={chartData} 
@@ -342,131 +337,108 @@ const AdminDashboard = () => {
                 />
               </div>
             </div>
-            {/* ------------------------------------- */}
-
           </div>
         )}
 
-        {/* TAB: EDITORS */}
+        {/* TAB: EDITORS (GIAO DIỆN CARD MỚI) */}
         {activeTab === "editors" && (
           <div className="editors-section">
-            <h2>Danh Sách Editor</h2>
-            <div className="table-wrapper">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Editor</th>
-                    <th>Kinh Nghiệm</th>
-                    <th>Bài Viết</th>
-                    <th>Tổng Views</th>
-                    <th>Ngày Tham Gia</th>
-                    <th>Hành Động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {editors.map((editor) => (
-                    <tr key={editor.id}>
-                      <td>
-                        <div className="user-info">
-                          <img
-                            src={
-                              editor.avatar ||
-                              "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                            }
-                            alt=""
-                          />
-                          <div>
-                            <strong>{editor.name || editor.username}</strong>
-                            <span>{editor.email}</span>
-                          </div>
-                        </div>
-                      </td>
-                      <td>{editor.years_of_experience} năm</td>
-                      <td>
-                        <span className="tag">{editor.post_count} bài</span>
-                      </td>
-                      <td>{editor.total_views?.toLocaleString()}</td>
-                      <td>{new Date(editor.created_at).toLocaleDateString()}</td>
-                      <td>
-                        <button 
-                          className="btn-reject" 
-                          style={{padding: "5px 10px", fontSize: "12px"}}
-                          onClick={() => handleDeleteEditor(editor.id)}
-                        >
-                          Xóa
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <h2 style={{ marginBottom: "20px" }}>Danh Sách Editor Chính Thức ({editors.length})</h2>
+            <div className="grid-container">
+              {editors.map((editor) => (
+                <div className="editor-card" key={editor.id}>
+                  <div className="card-header">
+                    <img
+                      src={editor.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                      alt=""
+                    />
+                    <div className="status-badge active">Đang hoạt động</div>
+                  </div>
+                  <div className="card-body">
+                    <h3>{editor.name || editor.username}</h3>
+                    <p className="email">{editor.email}</p>
+                    
+                    <div className="stats-row">
+                      <div className="stat">
+                        <strong>{editor.years_of_experience}</strong>
+                        <span>Năm KN</span>
+                      </div>
+                      <div className="stat">
+                        <strong>{editor.post_count}</strong>
+                        <span>Bài viết</span>
+                      </div>
+                      <div className="stat">
+                        <strong>{editor.total_views?.toLocaleString()}</strong>
+                        <span>Views</span>
+                      </div>
+                    </div>
+                    
+                    <p className="join-date">Tham gia: {new Date(editor.created_at).toLocaleDateString()}</p>
+                  </div>
+                  <div className="card-footer">
+                    <button 
+                      className="btn-delete-full" 
+                      onClick={() => handleDeleteEditor(editor.id)}
+                    >
+                      Xóa Editor
+                    </button>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         )}
 
-        {/* TAB: PENDING EDITORS */}
+        {/* TAB: PENDING EDITORS (GIAO DIỆN CARD MỚI) */}
         {activeTab === "pending-editors" && (
           <div className="editors-section">
-            <h2>Editor Chờ Duyệt</h2>
+            <h2 style={{ marginBottom: "20px" }}>Yêu Cầu Đăng Ký ({pendingEditors.length})</h2>
             {pendingEditors.length === 0 ? (
-              <p className="empty-state">🎉 Không có Editor nào cần duyệt!</p>
+              <div className="empty-state">
+                <p>🎉 Tuyệt vời! Không có yêu cầu nào đang chờ xử lý.</p>
+              </div>
             ) : (
-              <div className="table-wrapper">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Editor</th>
-                      <th>Kinh Nghiệm</th>
-                      <th>Ngày Đăng Ký</th>
-                      <th>Hành Động</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pendingEditors.map((editor) => (
-                      <tr key={editor.id}>
-                        <td>
-                          <div className="user-info">
-                            <img
-                              src={
-                                editor.avatar ||
-                                "https://cdn-icons-png.flaticon.com/512/149/149071.png"
-                              }
-                              alt=""
-                            />
-                            <div>
-                              <strong>{editor.name || editor.username}</strong>
-                              <span>{editor.email}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td>{editor.years_of_experience ?? 0} năm</td>
-                        <td>{new Date(editor.created_at).toLocaleDateString()}</td>
-                        <td>
-                          <div className="actions">
-                            <button
-                              className="btn-approve"
-                              onClick={() => handleApproveEditor(editor.id)}
-                            >
-                              ✅ Duyệt
-                            </button>
-                            <button
-                              className="btn-reject"
-                              onClick={() => handleRejectEditor(editor.id)}
-                            >
-                              ❌ Từ chối
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="grid-container">
+                {pendingEditors.map((editor) => (
+                  <div className="editor-card pending" key={editor.id}>
+                    <div className="card-header">
+                      <img
+                        src={editor.avatar || "https://cdn-icons-png.flaticon.com/512/149/149071.png"}
+                        alt=""
+                      />
+                      <div className="status-badge pending">Chờ duyệt</div>
+                    </div>
+                    <div className="card-body">
+                      <h3>{editor.name || editor.username}</h3>
+                      <p className="email">{editor.email}</p>
+                      
+                      <div className="info-box">
+                         <p><strong>Kinh nghiệm:</strong> {editor.years_of_experience ?? 0} năm</p>
+                         <p><strong>Ngày ĐK:</strong> {new Date(editor.created_at).toLocaleDateString()}</p>
+                      </div>
+                    </div>
+                    <div className="card-footer dual-actions">
+                      <button
+                        className="btn-approve"
+                        onClick={() => handleApproveEditor(editor.id)}
+                      >
+                        ✅ Duyệt
+                      </button>
+                      <button
+                        className="btn-reject"
+                        onClick={() => handleRejectEditor(editor.id)}
+                      >
+                        ❌ Từ chối
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
 
-        {/* TAB: REPORTS */}
+        {/* TAB: REPORTS (Giữ nguyên) */}
         {activeTab === "reports" && (
           <div className="reports-section">
             <h2>Báo Cáo Vi Phạm</h2>
@@ -528,7 +500,7 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* TAB: POSTS */}
+        {/* TAB: POSTS (Giữ nguyên) */}
         {activeTab === "posts" && (
           <div className="posts-section">
             <h2>Bài Viết Chờ Duyệt</h2>
