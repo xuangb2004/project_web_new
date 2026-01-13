@@ -12,7 +12,7 @@ export const db = mysql.createPool({
   port: process.env.DB_PORT || 3306,
   waitForConnections: true,
   // ⚠️ QUAN TRỌNG: Database free chỉ cho 5 connection.
-  connectionLimit: 4, 
+  connectionLimit: 2, 
   queueLimit: 0,
 });
 
