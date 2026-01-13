@@ -177,7 +177,7 @@ export const deleteReports = (req, res) => {
 };
 
 // --- MỚI: HÀM LẤY THỐNG KÊ BIỂU ĐỒ ---
-export const getInteractionStats = (req, res) => {
+export const getInteractionStats = async (req, res) => { // THÊM ASYNC Ở ĐÂY
   const { startDate, endDate } = req.query;
 
   if (!startDate || !endDate) {
@@ -192,7 +192,6 @@ export const getInteractionStats = (req, res) => {
     GROUP BY DATE(viewed_at)
   `;
 
-  // 2. Query Lượt Thích (Likes - cần cột created_at)
   const qLikes = `
     SELECT DATE(created_at) as date, COUNT(*) as count 
     FROM Likes 
@@ -200,7 +199,6 @@ export const getInteractionStats = (req, res) => {
     GROUP BY DATE(created_at)
   `;
 
-  // 3. Query Bình Luận (Comments)
   const qComments = `
     SELECT DATE(date) as date, COUNT(*) as count 
     FROM Comments 
@@ -211,24 +209,32 @@ export const getInteractionStats = (req, res) => {
   const startQuery = `${startDate} 00:00:00`;
   const endQuery = `${endDate} 23:59:59`;
 
-  // Chạy 3 câu lệnh song song
-  Promise.all([
-    new Promise((resolve, reject) => db.query(qViews, [startQuery, endQuery], (err, data) => err ? reject(err) : resolve(data))),
-    new Promise((resolve, reject) => db.query(qLikes, [startQuery, endQuery], (err, data) => err ? reject(err) : resolve(data))),
-    new Promise((resolve, reject) => db.query(qComments, [startQuery, endQuery], (err, data) => err ? reject(err) : resolve(data)))
-  ])
-  .then(([viewsData, likesData, commentsData]) => {
-    // Tổng hợp dữ liệu
+  // 2. Hàm hỗ trợ biến db.query thành Promise để dùng được await
+  const queryAsync = (sql, params) => {
+    return new Promise((resolve, reject) => {
+      db.query(sql, params, (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
+    });
+  };
+
+  try {
+    // 3. THAY ĐỔI QUAN TRỌNG: Chạy TUẦN TỰ từng cái một (await) thay vì song song
+    // Cách này chậm hơn xíu nhưng an toàn cho DB giới hạn kết nối thấp
+    const viewsData = await queryAsync(qViews, [startQuery, endQuery]);
+    const likesData = await queryAsync(qLikes, [startQuery, endQuery]);
+    const commentsData = await queryAsync(qComments, [startQuery, endQuery]);
+
+    // 4. Xử lý dữ liệu (Giữ nguyên logic cũ)
     const stats = {};
     const start = moment(startDate);
     const end = moment(endDate);
 
-    // Tạo khung ngày rỗng (để ngày nào không có view vẫn hiện 0)
     for (let m = moment(start); m.isSameOrBefore(end); m.add(1, 'days')) {
       stats[m.format('YYYY-MM-DD')] = { views: 0, likes: 0, comments: 0 };
     }
 
-    // Fill data
     viewsData.forEach(item => {
       const d = moment(item.date).format('YYYY-MM-DD');
       if (stats[d]) stats[d].views = item.count;
@@ -244,16 +250,16 @@ export const getInteractionStats = (req, res) => {
       if (stats[d]) stats[d].comments = item.count;
     });
 
-    // Chuyển về mảng
     const result = Object.keys(stats).map(date => ({
       date,
       ...stats[date]
     })).sort((a,b) => new Date(a.date) - new Date(b.date));
 
     return res.status(200).json(result);
-  })
-  .catch(err => {
-    console.log(err);
+
+  } catch (err) {
+    console.log("Lỗi Stats:", err);
+    // Trả về lỗi 500 nhưng log rõ ràng hơn
     return res.status(500).json(err);
-  });
+  }
 };

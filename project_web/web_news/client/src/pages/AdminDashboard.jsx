@@ -28,9 +28,23 @@ const AdminDashboard = () => {
   const [pendingEditors, setPendingEditors] = useState([]);
   const [pendingPosts, setPendingPosts] = useState([]);
   const [reportedPosts, setReportedPosts] = useState([]);
+
+  // --- LOGIC NGÀY THÁNG MỚI ---
+  const today = new Date().toISOString().split('T')[0]; // Ngày hôm nay
   const [startDate, setStartDate] = useState(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
-  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(today);
   const [chartData, setChartData] = useState({ labels: [], datasets: [] });
+
+  // Hàm chọn nhanh ngày
+  const handleQuickSelect = (days) => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(end.getDate() - days);
+    
+    setEndDate(end.toISOString().split('T')[0]);
+    setStartDate(start.toISOString().split('T')[0]);
+  };
+  // -----------------------------
 
   useEffect(() => {
     if (!currentUser) {
@@ -65,12 +79,16 @@ const AdminDashboard = () => {
     fetchData();
   }, [activeTab]);
 
+  // --- FETCH CHART DATA ---
   useEffect(() => {
     const fetchChart = async () => {
+      // Validate: Nếu ngày bắt đầu lớn hơn ngày kết thúc thì không gọi API
+      if (startDate > endDate) return;
+
       try {
         const res = await axios.get(`/admin/stats/interactions?startDate=${startDate}&endDate=${endDate}`);
         setChartData({
-          labels: res.data.map(d => moment(d.date).format("DD/MM")),
+          labels: res.data.map(d => moment(d.date).format("DD/MM")), // Format ngày đẹp hơn (13/01)
           datasets: [
             { label: 'Lượt xem', data: res.data.map(d => d.views), backgroundColor: '#4bc0c0' },
             { label: 'Lượt thích', data: res.data.map(d => d.likes), backgroundColor: '#ff6384' },
@@ -79,6 +97,7 @@ const AdminDashboard = () => {
         });
       } catch (err) { console.log(err); }
     };
+    
     if (startDate && endDate) fetchChart();
   }, [startDate, endDate]);
 
@@ -90,7 +109,6 @@ const AdminDashboard = () => {
       } else {
         alert("Đã duyệt Editor thành công!");
       }
-      // Refresh data
       setPendingEditors(pendingEditors.filter((editor) => editor.id !== userId));
     } catch (err) {
       console.error(err);
@@ -268,14 +286,63 @@ const AdminDashboard = () => {
               </div>
             </div>
 
-            <div className="chart-container" style={{background: 'white', padding: '20px', margin: '20px 0', borderRadius: '8px'}}>
-              <h3>Thống kê tương tác</h3>
-              <div style={{display: 'flex', gap: '10px', marginBottom: '20px'}}>
-                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
-                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+            {/* --- KHU VỰC BIỂU ĐỒ (Đã Nâng Cấp) --- */}
+            <div className="chart-container" style={{background: 'white', padding: '20px', margin: '20px 0', borderRadius: '8px', boxShadow: "0 2px 8px rgba(0,0,0,0.1)"}}>
+              <div className="chart-header" style={{display:"flex", flexWrap: "wrap", justifyContent:"space-between", alignItems:"center", marginBottom:"20px", gap: "15px"}}>
+                <h3 style={{margin: 0}}>Thống kê tương tác</h3>
+                
+                <div className="filters" style={{display:"flex", alignItems:"center", gap:"15px", flexWrap: "wrap"}}>
+                   {/* Nút chọn nhanh */}
+                   <div className="quick-actions" style={{display: "flex", gap: "5px"}}>
+                      <button onClick={() => handleQuickSelect(7)} style={{padding: "6px 12px", fontSize: "13px", border: "1px solid #ddd", background: "#f8f9fa", cursor: "pointer", borderRadius: "4px"}}>7 ngày</button>
+                      <button onClick={() => handleQuickSelect(30)} style={{padding: "6px 12px", fontSize: "13px", border: "1px solid #ddd", background: "#f8f9fa", cursor: "pointer", borderRadius: "4px"}}>30 ngày</button>
+                   </div>
+
+                   <span style={{color: "#ccc"}}>|</span>
+
+                   {/* Bộ chọn ngày có ràng buộc min/max */}
+                   <div className="date-inputs" style={{display: "flex", alignItems: "center", gap: "10px"}}>
+                      <div style={{position: "relative"}}>
+                        <span style={{fontSize: "11px", color: "#666", display: "block", marginBottom: "2px"}}>Từ ngày</span>
+                        <input 
+                            type="date" 
+                            value={startDate} 
+                            max={endDate} // Chặn: Start không được lớn hơn End
+                            onChange={e => setStartDate(e.target.value)}
+                            style={{padding: "6px", border: "1px solid #ddd", borderRadius: "4px"}}
+                        />
+                      </div>
+                      
+                      <span style={{marginTop: "18px", color: "#666"}}>➔</span>
+                      
+                      <div style={{position: "relative"}}>
+                        <span style={{fontSize: "11px", color: "#666", display: "block", marginBottom: "2px"}}>Đến ngày</span>
+                        <input 
+                            type="date" 
+                            value={endDate} 
+                            min={startDate} // Chặn: End không được nhỏ hơn Start
+                            max={today}     // Chặn: End không được quá hôm nay
+                            onChange={e => setEndDate(e.target.value)}
+                            style={{padding: "6px", border: "1px solid #ddd", borderRadius: "4px"}}
+                        />
+                      </div>
+                   </div>
+                </div>
               </div>
-              <Bar data={chartData} />
+              
+              {/* Chart */}
+              <div style={{height: "400px"}}>
+                <Bar 
+                  data={chartData} 
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                  }} 
+                />
+              </div>
             </div>
+            {/* ------------------------------------- */}
 
           </div>
         )}
@@ -293,6 +360,7 @@ const AdminDashboard = () => {
                     <th>Bài Viết</th>
                     <th>Tổng Views</th>
                     <th>Ngày Tham Gia</th>
+                    <th>Hành Động</th>
                   </tr>
                 </thead>
                 <tbody>
