@@ -234,7 +234,7 @@ const handleLike = async () => {
 
   // --- LOGIC CHẶN XEM BÀI CHƯA DUYỆT ---
   const isAuthor = currentUser && post.uid && currentUser.id === post.uid;
-  const isAdmin = currentUser && currentUser.role === 1;
+  const isAdmin = currentUser && currentUser.role === "admin";
 
   // Kiểm tra: Nếu bài chưa load xong thì bỏ qua, nếu load xong rồi mới check
   if (post.status && post.status !== "approved" && !isAuthor && !isAdmin) {
