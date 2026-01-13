@@ -201,46 +201,31 @@ export const updatePost = (req, res) => {
     if (err) return res.status(403).json("Token is not valid!");
 
     const postId = req.params.id;
-
-    // Logic: Nếu là Admin (role_id = 1) sửa thì giữ nguyên status (hoặc auto approve).
-    // Nếu là Editor/User sửa thì bắt buộc reset về 'pending'.
     const isAdmin = userInfo.role_id === 1;
-    const newStatus = isAdmin ? 'approved' : 'pending';
 
-    // Cập nhật câu Query: Thêm `status` = ?
-    const q =
-      "UPDATE Posts SET `title`=?, `desc`=?, `price`=?, `cat`=?, `img`=?, `status`=? WHERE `id` = ? AND `user_id` = ?";
+    // Lấy dữ liệu từ Frontend gửi lên
+    const { title, content, thumbnail, category_id } = req.body;
 
-    const values = [
-      req.body.title,
-      req.body.desc,
-      req.body.price,
-      req.body.cat,
-      req.body.img,
-      newStatus, // Reset trạng thái tại đây
-      postId,
-      userInfo.id,
-    ];
+    let q = "";
+    let values = [];
 
-    // LƯU Ý: Nếu Admin sửa bài của người khác, logic `AND user_id = ?` ở trên sẽ chặn Admin.
-    // Nếu bạn muốn Admin sửa được bài của bất kỳ ai, cần đổi logic query một chút:
-    
-    let qUpdate;
-    let params;
-
+    // TRƯỜNG HỢP 1: ADMIN SỬA (Sửa bài bất kỳ, giữ trạng thái Approved)
     if (isAdmin) {
-       // Admin sửa bài bất kỳ -> Không cần check user_id, status giữ approved (hoặc tuỳ chọn)
-       qUpdate = "UPDATE Posts SET `title`=?, `desc`=?, `price`=?, `cat`=?, `img`=? WHERE `id` = ?";
-       params = [req.body.title, req.body.desc, req.body.price, req.body.cat, req.body.img, postId];
-    } else {
-       // Editor/User sửa bài của chính mình -> Reset về pending
-       qUpdate = "UPDATE Posts SET `title`=?, `desc`=?, `price`=?, `cat`=?, `img`=?, `status`='pending' WHERE `id` = ? AND `user_id` = ?";
-       params = [req.body.title, req.body.desc, req.body.price, req.body.cat, req.body.img, postId, userInfo.id];
+      q = "UPDATE Posts SET `title`=?, `content`=?, `thumbnail`=?, `category_id`=?, `status`='approved' WHERE `id` = ?";
+      values = [title, content, thumbnail, category_id, postId];
+    } 
+    // TRƯỜNG HỢP 2: EDITOR/USER SỬA (Chỉ sửa bài mình, Reset về Pending)
+    else {
+      q = "UPDATE Posts SET `title`=?, `content`=?, `thumbnail`=?, `category_id`=?, `status`='pending' WHERE `id` = ? AND `user_id` = ?";
+      values = [title, content, thumbnail, category_id, postId, userInfo.id];
     }
 
-    db.query(qUpdate, params, (err, data) => {
-      if (err) return res.status(500).json(err);
-      return res.json("Post has been updated.");
+    db.query(q, values, (err, data) => {
+      if (err) {
+        console.error("Lỗi Update Post:", err);
+        return res.status(500).json(err);
+      }
+      return res.json("Cập nhật bài viết thành công!");
     });
   });
 };
