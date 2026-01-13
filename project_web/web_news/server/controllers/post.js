@@ -53,9 +53,7 @@ export const getPosts = (req, res) => {
     q += " ORDER BY RAND()"; 
   }
   else if (sortBy === 'random_recent') {
-    // CÁCH 1: Sửa 1 MONTH thành 12 MONTH (1 năm) hoặc 10 YEAR
-    q += " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)"; 
-    
+    // CÁCH 1: Sửa 1 MONTH thành 12 MONTH (1 năm) hoặc 10 YEAR    
     // HOẶC CÁCH 2: Xóa hẳn dòng trên đi để lấy tất cả bài bất kể thời gian
     
     q += " ORDER BY RAND()";
