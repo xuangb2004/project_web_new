@@ -32,7 +32,8 @@ const Home = () => {
   };
 
   if (posts.length === 0) return <div className="home"><p>Đang tải tin tức...</p></div>;
-
+  console.log("Tổng số bài lấy được:", posts.length);
+  console.log("Danh sách bài:", posts);
   return (
     <div className="home">
       <div className="news-layout">
