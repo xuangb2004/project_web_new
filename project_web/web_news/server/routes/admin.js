@@ -14,7 +14,7 @@ import {
 } from "../controllers/admin.js";
 
 const router = express.Router();
-
+router.get("/ping", (req, res) => res.send("PONG - Code moi nhat"));
 router.get("/stats", getDashboardStats);
 router.get("/stats/interactions", getInteractionStats); // <--- Thêm dòng này
 router.get("/editors", getEditorsList);
