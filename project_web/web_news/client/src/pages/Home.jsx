@@ -4,15 +4,18 @@ import axios from "../utils/axios";
 import moment from "moment";
 import Trending from "../components/Trending";
 
-useEffect(() => {
+const Home = () => {
+  const [posts, setPosts] = useState([]);
+  const cat = useLocation().search;
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
-        // Nếu có category (cat) thì dùng cat.
-        // Nếu không (trang chủ), dùng sort ngẫu nhiên theo bài mới (random_recent)
+        // Logic: Nếu có category thì lọc theo cat, nếu không thì lấy ngẫu nhiên tin mới
         const query = cat ? cat : "?sortBy=random_recent"; 
         
-        // --- SỬA LẠI DÒNG NÀY ---
-        // Thay vì dùng `${cat}`, hãy dùng `${query}`
+        // SỬA LỖI BUILD TẠI ĐÂY: Dùng biến 'query' thay vì chỉ dùng 'cat'
+        // Trước đó bạn viết: axios.get(`/posts${cat}`) -> biến query bị thừa -> Lỗi Build
         const res = await axios.get(`/posts${query}`);
         
         setPosts(res.data);
@@ -77,7 +80,7 @@ useEffect(() => {
 
         {/* --- CỘT PHẢI (DANH SÁCH TIN) --- */}
         <div className="sidebar-col">
-          {posts.slice( 4).map((post, index) => (
+          {posts.slice(4).map((post, index) => (
             <div className="sidebar-post" key={post.id}>
               <div className="info">
                 <Link to={`/post/${post.id}`} className="link">
