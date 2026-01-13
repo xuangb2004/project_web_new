@@ -5,17 +5,23 @@ import moment from "moment";
 import Trending from "../components/Trending";
 
 useEffect(() => {
-  const fetchData = async () => {
-    try {
-      // Thêm tham số sortBy=random_recent
-      const res = await axios.get("/posts?sortBy=random_recent"); 
-      setPosts(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  fetchData();
-}, []);
+    const fetchData = async () => {
+      try {
+        // Nếu có category (cat) thì dùng cat.
+        // Nếu không (trang chủ), dùng sort ngẫu nhiên theo bài mới (random_recent)
+        const query = cat ? cat : "?sortBy=random_recent"; 
+        
+        // --- SỬA LẠI DÒNG NÀY ---
+        // Thay vì dùng `${cat}`, hãy dùng `${query}`
+        const res = await axios.get(`/posts${query}`);
+        
+        setPosts(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchData();
+  }, [cat]);
 
   const getText = (html) => {
     const doc = new DOMParser().parseFromString(html, "text/html");
