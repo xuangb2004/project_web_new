@@ -3,8 +3,15 @@ import cors from "cors";
 import session from "express-session";
 import cookieParser from "cookie-parser"; 
 import multer from "multer";
+import dotenv from "dotenv";
+
+// Import thư viện Cloudinary
 import { v2 as cloudinary } from "cloudinary";
 import { CloudinaryStorage } from "multer-storage-cloudinary";
+
+// Import Session Store
+import MySQLStore from "express-mysql-session";
+
 // Import Routes
 import authRoutes from "./routes/auth.js";
 import postRoutes from "./routes/post.js";
@@ -17,100 +24,87 @@ import categoryRoutes from "./routes/category.js";
 import reportRoutes from "./routes/reports.js";
 import aiRoutes from "./routes/ai.js";
 
+// Khởi tạo app
 const app = express();
+dotenv.config(); // Đọc file .env
 
 // ==========================================
-// 1. CẤU HÌNH CORS (PHẢI NẰM TRÊN CÙNG)
+// 1. CẤU HÌNH CORS
 // ==========================================
-const FRONTEND_URLS = process.env.FRONTEND_URLS || "http://localhost:5173,https://project-web-new-ten.vercel.app";
+// Lưu ý: Cập nhật domain frontend của bạn vào đây
+const FRONTEND_URLS = process.env.FRONTEND_URLS || "http://localhost:5173,https://project-web-new-ten.vercel.app,https://bk-news-lc77q2wy2-xuans-projects-b7843493.vercel.app";
 const allowedOrigins = FRONTEND_URLS.split(',').map(s => s.trim());
-console.log("🔧 Allowed frontend origins:", allowedOrigins);
 
 app.use(cors({
   origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // allow server-to-server, mobile, curl, etc.
+    if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) !== -1) return callback(null, true);
-    console.warn('Blocked CORS request from:', origin);
-    return callback(new Error('CORS policy: This origin is not allowed'));
+    return callback(new Error('Not allowed by CORS'));
   },
-  credentials: true // Quan trọng: Cho phép nhận Cookie
+  credentials: true
 }));
 
-// Health endpoint for quick diagnostics
-app.get('/health', (req, res) => {
-  db.query('SELECT 1', (err) => {
-    if (err) return res.status(500).json({ db: false, error: err.message });
-    return res.json({ db: true });
-  });
-});
-
-// ==========================================
-// 2. CẤU HÌNH PARSER (ĐỌC DỮ LIỆU)
-// ==========================================
 app.use(express.json());
-app.use(cookieParser()); // Đọc cookie sau khi đã qua cửa CORS
+app.use(cookieParser());
 
 // ==========================================
-// 3. CẤU HÌNH UPLOAD ẢNH
+// 2. CẤU HÌNH UPLOAD ẢNH (CLOUDINARY)
 // ==========================================
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "../client/public/upload"); 
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + file.originalname); 
-  },
-});
-const upload = multer({ storage });
-
-app.post("/api/upload", upload.single("file"), (req, res) => {
-  const file = req.file;
-  res.status(200).json(file.filename);
-});
-
-// ==========================================
-// 4. (TÙY CHỌN) SESSION
-// ==========================================
-// Nếu bạn dùng JWT token (access_token) thì cái này không thực sự tác động đến Login,
-// nhưng nếu muốn giữ lại thì để ở đây.
-app.use(session({
-  secret: "secret-key",
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: false,
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000
-  }
-}));
+// Cấu hình Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME,
   api_key: process.env.CLOUDINARY_KEY,
   api_secret: process.env.CLOUDINARY_SECRET
 });
 
-// Cấu hình kho lưu trữ trên Cloudinary
+// Tạo kho lưu trữ trên Cloudinary (THAY THẾ CODE CŨ TẠI ĐÂY)
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'web_news_uploads', // Tên thư mục trên Cloudinary
-    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'], // Định dạng cho phép
+    folder: 'web_news_uploads',
+    allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
   },
 });
 
 const upload = multer({ storage: storage });
 
-// API Upload
+// API Upload trả về link online
 app.post("/api/upload", upload.single("file"), (req, res) => {
-  // Khi dùng Cloudinary, đường dẫn ảnh đầy đủ sẽ nằm trong req.file.path
-  // Ví dụ: https://res.cloudinary.com/demo/image/upload/v16.../anh.jpg
   if (!req.file) {
       return res.status(400).json("No file uploaded");
   }
-  res.status(200).json(req.file.path); // Trả về đường dẫn ảnh Online
+  // Trả về đường dẫn ảnh trên Cloudinary
+  res.status(200).json(req.file.path); 
 });
+
 // ==========================================
-// 5. ROUTES
+// 3. CẤU HÌNH SESSION (MYSQL)
+// ==========================================
+const MySQLSessionStore = MySQLStore(session);
+const sessionStore = new MySQLSessionStore({
+  host: process.env.DB_HOST,
+  port: process.env.DB_PORT || 3306,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  createDatabaseTable: true,
+});
+
+app.use(session({
+  key: 'session_cookie_name',
+  secret: "secret-key",
+  store: sessionStore,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: false, 
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 
+  }
+}));
+
+// ==========================================
+// 4. ROUTES
 // ==========================================
 app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
@@ -122,6 +116,11 @@ app.use("/api/interactions", interactionRoutes);
 app.use("/api/categories", categoryRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/chat", aiRoutes);
+
+// Test route
+app.get('/health', (req, res) => {
+  res.json({ status: "OK" });
+});
 
 const PORT = process.env.PORT || 8800;
 app.listen(PORT, () => {
