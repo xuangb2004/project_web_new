@@ -1,14 +1,12 @@
 import { db } from "../db.js";
-import moment from "moment"; // Đảm bảo đã cài: npm install moment
+import moment from "moment"; // <--- 1. BỔ SUNG IMPORT MOMENT
 import { sendEmail } from "../utils/email.js"; 
 
 export const getDashboardStats = (req, res) => {
   const q = `
     SELECT 
       (SELECT COUNT(*) FROM Users WHERE role_id = 3) as total_users,
-      -- SỬA DÒNG DƯỚI ĐÂY: Thêm "AND status = 'approved'"
-      (SELECT COUNT(*) FROM Users WHERE role_id = 2 AND status = 'approved') as total_editors, 
-      
+      (SELECT COUNT(*) FROM Users WHERE role_id = 2 AND status = 'approved') as total_editors,
       (SELECT COUNT(*) FROM Posts) as total_posts,
       (SELECT COALESCE(SUM(ns.view_count), 0) FROM NewsStats ns) as total_views, 
       (SELECT COUNT(*) FROM Posts WHERE status = 'pending') as pending_posts
@@ -153,11 +151,8 @@ export const deletePost = (req, res) => {
   });
 };
 
-// server/controllers/admin.js
-
 export const getReportedPosts = (req, res) => {
-  // Thay đổi: Thêm dòng GROUP_CONCAT(r.reason SEPARATOR '; ') as reasons
-8  
+  // 2. ĐÃ XÓA SỐ '8' GÂY LỖI Ở ĐÂY
   const q = `
     SELECT p.id, p.title, u.username as author_name, 
            COUNT(r.id) as report_count,
@@ -185,40 +180,21 @@ export const deleteReports = (req, res) => {
   });
 };
 
-// --- MỚI: HÀM LẤY THỐNG KÊ BIỂU ĐỒ ---
-export const getInteractionStats = async (req, res) => { // THÊM ASYNC Ở ĐÂY
+// --- HÀM LẤY THỐNG KÊ BIỂU ĐỒ (Đã fix connection limit) ---
+export const getInteractionStats = async (req, res) => {
   const { startDate, endDate } = req.query;
 
   if (!startDate || !endDate) {
     return res.status(400).json("Vui lòng chọn ngày bắt đầu và kết thúc");
   }
 
-  // 1. Query Lượt Xem (ReadHistory)
-  const qViews = `
-    SELECT DATE(viewed_at) as date, COUNT(*) as count 
-    FROM ReadHistory 
-    WHERE viewed_at BETWEEN ? AND ? 
-    GROUP BY DATE(viewed_at)
-  `;
-
-  const qLikes = `
-    SELECT DATE(created_at) as date, COUNT(*) as count 
-    FROM Likes 
-    WHERE created_at BETWEEN ? AND ? 
-    GROUP BY DATE(created_at)
-  `;
-
-  const qComments = `
-    SELECT DATE(created_at) as date, COUNT(*) as count 
-    FROM Comments 
-    WHERE created_at BETWEEN ? AND ? 
-    GROUP BY DATE(created_at)
-  `;
+  const qViews = `SELECT DATE(viewed_at) as date, COUNT(*) as count FROM ReadHistory WHERE viewed_at BETWEEN ? AND ? GROUP BY DATE(viewed_at)`;
+  const qLikes = `SELECT DATE(created_at) as date, COUNT(*) as count FROM Likes WHERE created_at BETWEEN ? AND ? GROUP BY DATE(created_at)`;
+  const qComments = `SELECT DATE(created_at) as date, COUNT(*) as count FROM Comments WHERE created_at BETWEEN ? AND ? GROUP BY DATE(created_at)`;
 
   const startQuery = `${startDate} 00:00:00`;
   const endQuery = `${endDate} 23:59:59`;
 
-  // 2. Hàm hỗ trợ biến db.query thành Promise để dùng được await
   const queryAsync = (sql, params) => {
     return new Promise((resolve, reject) => {
       db.query(sql, params, (err, data) => {
@@ -229,13 +205,10 @@ export const getInteractionStats = async (req, res) => { // THÊM ASYNC Ở ĐÂ
   };
 
   try {
-    // 3. THAY ĐỔI QUAN TRỌNG: Chạy TUẦN TỰ từng cái một (await) thay vì song song
-    // Cách này chậm hơn xíu nhưng an toàn cho DB giới hạn kết nối thấp
     const viewsData = await queryAsync(qViews, [startQuery, endQuery]);
     const likesData = await queryAsync(qLikes, [startQuery, endQuery]);
     const commentsData = await queryAsync(qComments, [startQuery, endQuery]);
 
-    // 4. Xử lý dữ liệu (Giữ nguyên logic cũ)
     const stats = {};
     const start = moment(startDate);
     const end = moment(endDate);
@@ -268,7 +241,6 @@ export const getInteractionStats = async (req, res) => { // THÊM ASYNC Ở ĐÂ
 
   } catch (err) {
     console.log("Lỗi Stats:", err);
-    // Trả về lỗi 500 nhưng log rõ ràng hơn
     return res.status(500).json(err);
   }
 };
