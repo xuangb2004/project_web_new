@@ -4,6 +4,21 @@ import { AuthContext } from "../context/authContext";
 import axios from "../utils/axios";
 import "../style_admin.scss";
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import moment from 'moment';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
 const AdminDashboard = () => {
   const { currentUser, logout } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -13,6 +28,9 @@ const AdminDashboard = () => {
   const [pendingEditors, setPendingEditors] = useState([]);
   const [pendingPosts, setPendingPosts] = useState([]);
   const [reportedPosts, setReportedPosts] = useState([]);
+  const [startDate, setStartDate] = useState(new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
+  const [endDate, setEndDate] = useState(new Date().toISOString().split('T')[0]);
+  const [chartData, setChartData] = useState({ labels: [], datasets: [] });
 
   useEffect(() => {
     if (!currentUser) {
@@ -46,6 +64,23 @@ const AdminDashboard = () => {
     };
     fetchData();
   }, [activeTab]);
+
+  useEffect(() => {
+    const fetchChart = async () => {
+      try {
+        const res = await axios.get(`/admin/stats/interactions?startDate=${startDate}&endDate=${endDate}`);
+        setChartData({
+          labels: res.data.map(d => moment(d.date).format("DD/MM")),
+          datasets: [
+            { label: 'Lượt xem', data: res.data.map(d => d.views), backgroundColor: '#4bc0c0' },
+            { label: 'Lượt thích', data: res.data.map(d => d.likes), backgroundColor: '#ff6384' },
+            { label: 'Bình luận', data: res.data.map(d => d.comments), backgroundColor: '#36a2eb' },
+          ],
+        });
+      } catch (err) { console.log(err); }
+    };
+    if (startDate && endDate) fetchChart();
+  }, [startDate, endDate]);
 
   const handleApproveEditor = async (userId) => {
     try {
@@ -232,6 +267,16 @@ const AdminDashboard = () => {
                 <span className="desc">Nhân sự nội dung</span>
               </div>
             </div>
+
+            <div className="chart-container" style={{background: 'white', padding: '20px', margin: '20px 0', borderRadius: '8px'}}>
+              <h3>Thống kê tương tác</h3>
+              <div style={{display: 'flex', gap: '10px', marginBottom: '20px'}}>
+                <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
+                <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
+              </div>
+              <Bar data={chartData} />
+            </div>
+
           </div>
         )}
 

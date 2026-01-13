@@ -3,23 +3,25 @@ import {
   getDashboardStats, 
   getEditorsList, 
   getPendingPosts, 
-  updatePostStatus,
-  deleteUser,
+  updatePostStatus, 
+  deleteUser, 
   getPendingEditors,
   updateUserStatus,
   deletePost,
   getReportedPosts,
-  deleteReports
+  deleteReports,
+  getInteractionStats // <--- Import hàm mới
 } from "../controllers/admin.js";
 
 const router = express.Router();
 
 router.get("/stats", getDashboardStats);
+router.get("/stats/interactions", getInteractionStats); // <--- Thêm dòng này
 router.get("/editors", getEditorsList);
 router.get("/editors/pending", getPendingEditors);
 router.put("/users/:id/status", updateUserStatus);
 router.get("/posts/pending", getPendingPosts);
-router.put("/posts/:id/status", updatePostStatus);
+router.put("/posts/:id", updatePostStatus);
 router.delete("/users/:id", deleteUser);
 router.delete("/posts/:id", deletePost);
 router.get("/reports", getReportedPosts);

@@ -1,5 +1,5 @@
 import { db } from "../db.js";
-// Import hàm gửi mail vừa tạo
+import moment from "moment"; // Đảm bảo đã cài: npm install moment
 import { sendEmail } from "../utils/email.js"; 
 
 export const getDashboardStats = (req, res) => {
@@ -11,8 +11,6 @@ export const getDashboardStats = (req, res) => {
       (SELECT COALESCE(SUM(ns.view_count), 0) FROM NewsStats ns) as total_views, 
       (SELECT COUNT(*) FROM Posts WHERE status = 'pending') as pending_posts
   `;
-  // Lưu ý: Mình sửa total_views lấy từ bảng Posts (nếu bạn không dùng bảng NewsStats) 
-  // hoặc giữ nguyên NewsStats nếu DB bạn có.
 
   db.query(q, (err, data) => {
     if (err) return res.status(500).json(err);
@@ -96,12 +94,10 @@ export const getPendingEditors = (req, res) => {
   });
 };
 
-// --- HÀM NÀY ĐÃ ĐƯỢC SỬA ĐỂ GỬI MAIL ---
 export const updateUserStatus = (req, res) => {
   const userId = req.params.id;
-  const newStatus = req.body.status; // 'approved' hoặc 'rejected' (accepts 'active' for backward compatibility)
+  const newStatus = req.body.status; 
 
-  // 1. Lấy thông tin User trước để gửi mail
   const qGetUser = "SELECT email, username FROM Users WHERE id = ?";
   
   db.query(qGetUser, [userId], (err, data) => {
@@ -110,34 +106,22 @@ export const updateUserStatus = (req, res) => {
     const userEmail = data[0].email;
     const userName = data[0].username;
 
-    // 2. Cập nhật Status
     const qUpdate = "UPDATE Users SET status = ? WHERE id = ?";
     
     db.query(qUpdate, [newStatus, userId], async (err, result) => {
       if (err) return res.status(500).json(err);
 
-      // 3. Gửi Email thông báo (Chạy ngầm, không chặn response)
       let subject = "";
       let htmlContent = "";
 
       if (newStatus === 'approved' || newStatus === 'active') {
         subject = "🎉 Chúc mừng! Hồ sơ Nhà báo của bạn đã được duyệt";
-        htmlContent = `
-          <h3>Xin chào ${userName},</h3>
-          <p>Chúc mừng bạn! Yêu cầu đăng ký trở thành Nhà báo tại <b>MyNews</b> của bạn đã được Admin phê duyệt.</p>
-          <p>Bây giờ bạn có thể đăng nhập và bắt đầu viết bài.</p>
-          <a href="http://localhost:5173/login">Đăng nhập ngay</a>
-        `;
+        htmlContent = `<h3>Xin chào ${userName},</h3><p>Hồ sơ của bạn đã được duyệt.</p>`;
       } else {
         subject = "❌ Thông báo về hồ sơ đăng ký Nhà báo";
-        htmlContent = `
-          <h3>Xin chào ${userName},</h3>
-          <p>Rất tiếc, hồ sơ đăng ký trở thành Nhà báo của bạn chưa phù hợp với tiêu chí của chúng tôi vào lúc này.</p>
-          <p>Hồ sơ của bạn đã bị từ chối. Bạn có thể liên hệ admin để biết thêm chi tiết.</p>
-        `;
+        htmlContent = `<h3>Xin chào ${userName},</h3><p>Hồ sơ của bạn đã bị từ chối.</p>`;
       }
 
-      // Gọi hàm gửi mail và trả về trạng thái gửi email cho client
       let emailSent = true;
       let emailErrorMessage = null;
       try {
@@ -145,13 +129,13 @@ export const updateUserStatus = (req, res) => {
       } catch (emailError) {
         console.log("Lỗi gửi mail:", emailError);
         emailSent = false;
-        emailErrorMessage = emailError.message || String(emailError);
+        emailErrorMessage = emailError.message;
       }
 
       if (emailSent) {
-        return res.status(200).json({ message: "Đã cập nhật trạng thái và gửi email thông báo!", emailSent: true });
+        return res.status(200).json({ message: "Đã cập nhật và gửi email!", emailSent: true });
       } else {
-        return res.status(200).json({ message: "Đã cập nhật trạng thái, nhưng gửi email thất bại.", emailSent: false, emailError: emailErrorMessage });
+        return res.status(200).json({ message: "Đã cập nhật, gửi email lỗi.", emailSent: false, emailError: emailErrorMessage });
       }
     });
   });
@@ -189,5 +173,87 @@ export const deleteReports = (req, res) => {
   db.query(q, [postId], (err, data) => {
     if (err) return res.status(500).json(err);
     return res.status(200).json("Đã xóa báo cáo của bài viết!");
+  });
+};
+
+// --- MỚI: HÀM LẤY THỐNG KÊ BIỂU ĐỒ ---
+export const getInteractionStats = (req, res) => {
+  const { startDate, endDate } = req.query;
+
+  if (!startDate || !endDate) {
+    return res.status(400).json("Vui lòng chọn ngày bắt đầu và kết thúc");
+  }
+
+  // 1. Query Lượt Xem (ReadHistory)
+  const qViews = `
+    SELECT DATE(viewed_at) as date, COUNT(*) as count 
+    FROM ReadHistory 
+    WHERE viewed_at BETWEEN ? AND ? 
+    GROUP BY DATE(viewed_at)
+  `;
+
+  // 2. Query Lượt Thích (Likes - cần cột created_at)
+  const qLikes = `
+    SELECT DATE(created_at) as date, COUNT(*) as count 
+    FROM Likes 
+    WHERE created_at BETWEEN ? AND ? 
+    GROUP BY DATE(created_at)
+  `;
+
+  // 3. Query Bình Luận (Comments)
+  const qComments = `
+    SELECT DATE(date) as date, COUNT(*) as count 
+    FROM Comments 
+    WHERE date BETWEEN ? AND ? 
+    GROUP BY DATE(date)
+  `;
+
+  const startQuery = `${startDate} 00:00:00`;
+  const endQuery = `${endDate} 23:59:59`;
+
+  // Chạy 3 câu lệnh song song
+  Promise.all([
+    new Promise((resolve, reject) => db.query(qViews, [startQuery, endQuery], (err, data) => err ? reject(err) : resolve(data))),
+    new Promise((resolve, reject) => db.query(qLikes, [startQuery, endQuery], (err, data) => err ? reject(err) : resolve(data))),
+    new Promise((resolve, reject) => db.query(qComments, [startQuery, endQuery], (err, data) => err ? reject(err) : resolve(data)))
+  ])
+  .then(([viewsData, likesData, commentsData]) => {
+    // Tổng hợp dữ liệu
+    const stats = {};
+    const start = moment(startDate);
+    const end = moment(endDate);
+
+    // Tạo khung ngày rỗng (để ngày nào không có view vẫn hiện 0)
+    for (let m = moment(start); m.isSameOrBefore(end); m.add(1, 'days')) {
+      stats[m.format('YYYY-MM-DD')] = { views: 0, likes: 0, comments: 0 };
+    }
+
+    // Fill data
+    viewsData.forEach(item => {
+      const d = moment(item.date).format('YYYY-MM-DD');
+      if (stats[d]) stats[d].views = item.count;
+    });
+
+    likesData.forEach(item => {
+      const d = moment(item.date).format('YYYY-MM-DD');
+      if (stats[d]) stats[d].likes = item.count;
+    });
+
+    commentsData.forEach(item => {
+      const d = moment(item.date).format('YYYY-MM-DD');
+      if (stats[d]) stats[d].comments = item.count;
+    });
+
+    // Chuyển về mảng
+    const result = Object.keys(stats).map(date => ({
+      date,
+      ...stats[date]
+    })).sort((a,b) => new Date(a.date) - new Date(b.date));
+
+    return res.status(200).json(result);
+  })
+  .catch(err => {
+    console.log(err);
+    return res.status(500).json(err);
   });
 };
