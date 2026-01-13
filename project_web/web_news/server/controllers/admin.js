@@ -200,10 +200,10 @@ export const getInteractionStats = async (req, res) => { // THÊM ASYNC Ở ĐÂ
   `;
 
   const qComments = `
-    SELECT DATE(date) as date, COUNT(*) as count 
+    SELECT DATE(created_at) as date, COUNT(*) as count 
     FROM Comments 
-    WHERE date BETWEEN ? AND ? 
-    GROUP BY DATE(date)
+    WHERE created_at BETWEEN ? AND ? 
+    GROUP BY DATE(created_at)
   `;
 
   const startQuery = `${startDate} 00:00:00`;
