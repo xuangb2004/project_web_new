@@ -53,10 +53,13 @@ export const getPosts = (req, res) => {
     q += " ORDER BY RAND()"; 
   }
   else if (sortBy === 'random_recent') {
-    // 1. Lọc bài viết trong 1 tháng gần nhất (INTERVAL 1 MONTH)
-    q += " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
-    // 2. Sắp xếp ngẫu nhiên
+    // CÁCH 1: Sửa 1 MONTH thành 12 MONTH (1 năm) hoặc 10 YEAR
+    q += " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 12 MONTH)"; 
+    
+    // HOẶC CÁCH 2: Xóa hẳn dòng trên đi để lấy tất cả bài bất kể thời gian
+    
     q += " ORDER BY RAND()";
+    // Nếu có LIMIT ở cuối, hãy đảm bảo nó đủ lớn, ví dụ LIMIT 20
   }
   else if (sortBy === 'likes') {
     q += " ORDER BY like_count DESC, p.created_at DESC";
