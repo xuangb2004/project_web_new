@@ -21,7 +21,7 @@ router.get("/editors", getEditorsList);
 router.get("/editors/pending", getPendingEditors);
 router.put("/users/:id/status", updateUserStatus);
 router.get("/posts/pending", getPendingPosts);
-router.put("/posts/:id", updatePostStatus);
+router.put("/posts/:id/status", updatePostStatus);
 router.delete("/users/:id", deleteUser);
 router.delete("/posts/:id", deletePost);
 router.get("/reports", getReportedPosts);
