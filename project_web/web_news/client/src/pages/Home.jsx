@@ -4,22 +4,18 @@ import axios from "../utils/axios";
 import moment from "moment";
 import Trending from "../components/Trending";
 
-const Home = () => {
-  const [posts, setPosts] = useState([]);
-  const cat = useLocation().search;
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const query = cat ? cat : "?sortBy=random";
-        const res = await axios.get(`/posts${cat}`);
-        setPosts(res.data);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-    fetchData();
-  }, [cat]);
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      // Thêm tham số sortBy=random_recent
+      const res = await axios.get("/posts?sortBy=random_recent"); 
+      setPosts(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  fetchData();
+}, []);
 
   const getText = (html) => {
     const doc = new DOMParser().parseFromString(html, "text/html");

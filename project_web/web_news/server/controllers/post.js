@@ -51,6 +51,12 @@ export const getPosts = (req, res) => {
   if (sortBy === 'random') {
     q += " ORDER BY RAND()"; 
   }
+  else if (sortBy === 'random_recent') {
+    // 1. Lọc bài viết trong 1 tháng gần nhất (INTERVAL 1 MONTH)
+    q += " AND p.created_at >= DATE_SUB(NOW(), INTERVAL 1 MONTH)";
+    // 2. Sắp xếp ngẫu nhiên
+    q += " ORDER BY RAND()";
+  }
   else if (sortBy === 'likes') {
     q += " ORDER BY like_count DESC, p.created_at DESC";
   } else if (sortBy === 'comments') {
