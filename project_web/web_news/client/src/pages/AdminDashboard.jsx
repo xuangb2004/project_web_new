@@ -516,7 +516,15 @@ const AdminDashboard = () => {
                         {new Date(post.created_at).toLocaleDateString()}
                       </span>
                     </div>
-                    <h3>{post.title}</h3>
+                    <h3><a 
+                        href={`/post/${post.id}`} 
+                        target="_blank" 
+                        rel="noreferrer" 
+                        style={{ textDecoration: 'none', color: 'inherit' }}
+                        className="post-preview-link"
+                      >
+                        {post.title} <span style={{fontSize: "12px", color: "#4361ee"}}>↗</span>
+                      </a></h3>
                     <div className="author">
                       Tác giả: <strong>{post.author_name}</strong>
                     </div>

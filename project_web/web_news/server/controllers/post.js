@@ -184,35 +184,57 @@ export const deletePost = (req, res) => {
 // =========================================================
 // CẬP NHẬT BÀI VIẾT
 // =========================================================
+// server/controllers/post.js
+
 export const updatePost = (req, res) => {
-  const postId = req.params.id;
-  const { title, content, thumbnail, category_id, user_id } = req.body;
+  const token = req.cookies.access_token;
+  if (!token) return res.status(401).json("Not authenticated!");
 
-  if (!user_id) return res.status(401).json("Chưa đăng nhập!");
+  jwt.verify(token, "jwtkey", (err, userInfo) => {
+    if (err) return res.status(403).json("Token is not valid!");
 
-  const q = `
-    UPDATE Posts 
-    SET title = ?, 
-        content = ?, 
-        thumbnail = ?, 
-        category_id = ?,
-        updated_at = CURRENT_TIMESTAMP
-    WHERE id = ? AND user_id = ?
-  `;
+    const postId = req.params.id;
 
-  const values = [
-    title,
-    content,
-    thumbnail || null,
-    category_id || null,
-    postId,
-    user_id,
-  ];
+    // Logic: Nếu là Admin (role_id = 1) sửa thì giữ nguyên status (hoặc auto approve).
+    // Nếu là Editor/User sửa thì bắt buộc reset về 'pending'.
+    const isAdmin = userInfo.role_id === 1;
+    const newStatus = isAdmin ? 'approved' : 'pending';
 
-  db.query(q, values, (err, data) => {
-    if (err) return res.status(500).json(err);
-    if (data.affectedRows === 0) return res.status(403).json("Bạn không có quyền sửa bài này!");
-    return res.status(200).json("Cập nhật thành công!");
+    // Cập nhật câu Query: Thêm `status` = ?
+    const q =
+      "UPDATE Posts SET `title`=?, `desc`=?, `price`=?, `cat`=?, `img`=?, `status`=? WHERE `id` = ? AND `user_id` = ?";
+
+    const values = [
+      req.body.title,
+      req.body.desc,
+      req.body.price,
+      req.body.cat,
+      req.body.img,
+      newStatus, // Reset trạng thái tại đây
+      postId,
+      userInfo.id,
+    ];
+
+    // LƯU Ý: Nếu Admin sửa bài của người khác, logic `AND user_id = ?` ở trên sẽ chặn Admin.
+    // Nếu bạn muốn Admin sửa được bài của bất kỳ ai, cần đổi logic query một chút:
+    
+    let qUpdate;
+    let params;
+
+    if (isAdmin) {
+       // Admin sửa bài bất kỳ -> Không cần check user_id, status giữ approved (hoặc tuỳ chọn)
+       qUpdate = "UPDATE Posts SET `title`=?, `desc`=?, `price`=?, `cat`=?, `img`=? WHERE `id` = ?";
+       params = [req.body.title, req.body.desc, req.body.price, req.body.cat, req.body.img, postId];
+    } else {
+       // Editor/User sửa bài của chính mình -> Reset về pending
+       qUpdate = "UPDATE Posts SET `title`=?, `desc`=?, `price`=?, `cat`=?, `img`=?, `status`='pending' WHERE `id` = ? AND `user_id` = ?";
+       params = [req.body.title, req.body.desc, req.body.price, req.body.cat, req.body.img, postId, userInfo.id];
+    }
+
+    db.query(qUpdate, params, (err, data) => {
+      if (err) return res.status(500).json(err);
+      return res.json("Post has been updated.");
+    });
   });
 };
 

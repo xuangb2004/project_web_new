@@ -234,16 +234,16 @@ const handleLike = async () => {
 
   // --- LOGIC CHẶN XEM BÀI CHƯA DUYỆT ---
   const isAuthor = currentUser && post.uid && currentUser.id === post.uid;
-  const isAdmin = currentUser && currentUser.role === 'admin';
+  const isAdmin = currentUser && currentUser.role === 1;
 
   // Kiểm tra: Nếu bài chưa load xong thì bỏ qua, nếu load xong rồi mới check
   if (post.status && post.status !== "approved" && !isAuthor && !isAdmin) {
     return (
       <div className="single" style={{ marginTop: "100px", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
-        <h2 style={{ color: "#d32f2f" }}>Không thể truy cập</h2>
-        <p>Bài viết này đang ở trạng thái <b>Chờ duyệt</b> hoặc đã bị ẩn.</p>
-        <p>Chỉ tác giả bài viết mới có thể xem bản nháp này.</p>
-        <Link to="/" style={{ padding: "10px 20px", background: "teal", color: "white", borderRadius: "5px" }}>
+        <h2 style={{ color: "#d32f2f" }}>Quyền truy cập bị từ chối</h2>
+        <p>Bài viết này đang ở trạng thái <b>{post.status === 'pending' ? 'Chờ duyệt' : 'Bị từ chối'}</b>.</p>
+        <p>Chỉ tác giả hoặc Admin mới có thể xem nội dung này.</p>
+        <Link to="/" style={{ padding: "10px 20px", background: "teal", color: "white", borderRadius: "5px", textDecoration: "none" }}>
           Về trang chủ
         </Link>
       </div>
